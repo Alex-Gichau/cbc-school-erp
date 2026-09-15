@@ -42,15 +42,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-extrabold text-lg text-slate-900 tracking-tight font-sans">
-                Edura<span className="text-orange-500 font-black">SMS</span>
+              <span className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight font-sans">
+                PCEA St Andrews <span className="text-orange-500 font-black">Kindergarten</span>
               </span>
               <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-50 text-orange-600 border border-orange-200/60">
-                School Edition
+                SMS Portal
               </span>
             </div>
             <p className="text-[11px] text-slate-400 font-medium hidden md:block">
-              St. Theresa Campus • Term 1, 2026
+              PCEA St Andrews Campus • Term 1, 2026
             </p>
           </div>
         </div>
@@ -62,7 +62,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <input
               type="text"
               readOnly
-              placeholder="Search in School SMS..."
+              placeholder="Search PCEA St Andrews Kindergarten..."
               className="w-full pl-10 pr-20 py-2 bg-slate-50 hover:bg-slate-100/80 focus:bg-white border border-slate-200 rounded-lg text-xs text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 transition-all cursor-pointer"
             />
             <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">

@@ -162,13 +162,13 @@ export const ReportCardsManager: React.FC<ReportCardsManagerProps> = ({
         {/* School Header */}
         <div className="text-center pb-4 border-b-2 border-slate-900">
           <h1 className="text-2xl font-black uppercase tracking-widest text-slate-950">
-            EDURA ACADEMY
+            PCEA ST ANDREWS KINDERGARTEN
           </h1>
           <p className="text-xs font-sans uppercase font-bold tracking-wider text-slate-600 mt-0.5">
-            "Excellence in Character and Wisdom"
+            "Train up a child in the way he should go — Proverbs 22:6"
           </p>
           <p className="text-[11px] font-sans text-slate-500 mt-1">
-            St. Theresa Campus • P.O. Box 40201-00100, Nairobi • Tel: +254 20 678 9000 • Email: registrar@edura.edu
+            PCEA St. Andrews Campus • State House Road, P.O. Box 41282-00100, Nairobi • Tel: +254 20 272 3505 • Email: kindergarten@pceastandrews.org
           </p>
           <div className="inline-block mt-3 px-4 py-1 bg-slate-900 text-white font-sans text-xs font-bold uppercase tracking-widest rounded-full">
             Official Terminal Academic Report Card

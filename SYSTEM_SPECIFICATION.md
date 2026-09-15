@@ -1,16 +1,16 @@
-# Edura School Management System
-## Comprehensive System Specification & Operational Guide
+# PCEA St Andrews Kindergarten
+## Comprehensive School Management System Specification & Operational Guide
 *Written in Clear, Everyday Language — Free of Technical Jargon*
 
 ---
 
 ### Purpose of this Document
-This guide describes how the Edura School Management System functions in plain everyday language. It is written for School Board Trustees, Headteachers, Deputy Principals, Class Teachers, Bursars, and School Administrative Staff. It explains who does what, how daily school tasks are handled, and how information moves securely through our school community.
+This guide describes how the PCEA St Andrews Kindergarten Management System functions in plain everyday language. It is written for School Board Trustees, Headteachers, Deputy Principals, Class Teachers, Bursars, and School Administrative Staff. It explains who does what, how daily school tasks are handled, and how information moves securely through our school community.
 
 ---
 
 ## 1. Overview of the System
-The Edura School Management System is a centralized digital office for our school. It replaces paper filing cabinets, handwritten mark sheets, paper receipt booklets, and noticeboards with one secure, accessible place where teachers and administrators work together.
+The PCEA St Andrews Kindergarten Management System is a centralized digital office for our school. It replaces paper filing cabinets, handwritten mark sheets, paper receipt booklets, and noticeboards with one secure, accessible place where teachers and administrators work together.
 
 The system is organized around two primary roles:
 1. **School Administrators (Headteachers, Principals & Bursars):** Oversee school admissions, approve fee records, monitor school-wide attendance trends, manage staff and classroom schedules, and supervise the exam printing room.

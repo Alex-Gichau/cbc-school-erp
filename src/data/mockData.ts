@@ -14,9 +14,9 @@ export const DEMO_USERS: User[] = [
   {
     id: 'user_admin_1',
     name: 'Dr. Arthur Pendelton',
-    email: 'principal@edura.ac.ke',
+    email: 'administrator@pceastandrews.org',
     role: 'admin',
-    title: 'Headmaster & School Administrator',
+    title: 'Headteacher & Administrator',
     assignedClasses: ['Grade 9-A', 'Grade 9-B', 'Grade 10-A', 'Grade 11-A', 'Grade 12-A'],
     assignedSubjects: ['All School Operations'],
     phone: '+254 712 345 678'
@@ -24,9 +24,9 @@ export const DEMO_USERS: User[] = [
   {
     id: 'user_teacher_1',
     name: 'Sarah Jenkins',
-    email: 'sjenkins@edura.ac.ke',
+    email: 'sjenkins@pceastandrews.org',
     role: 'teacher',
-    title: 'Senior Mathematics & Physics Teacher',
+    title: 'Lead Class Teacher',
     assignedClasses: ['Grade 10-A', 'Grade 11-A'],
     assignedSubjects: ['Mathematics', 'Physics'],
     phone: '+254 722 987 654'
@@ -34,9 +34,9 @@ export const DEMO_USERS: User[] = [
   {
     id: 'user_teacher_2',
     name: 'Marcus Vance',
-    email: 'mvance@edura.ac.ke',
+    email: 'mvance@pceastandrews.org',
     role: 'teacher',
-    title: 'Language & Literature Instructor',
+    title: 'Early Learning Instructor',
     assignedClasses: ['Grade 9-A', 'Grade 10-A'],
     assignedSubjects: ['English Literature', 'Creative Writing'],
     phone: '+254 733 456 123'

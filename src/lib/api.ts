@@ -35,7 +35,7 @@ export const api = {
     } catch (_) {}
     return {
       status: 'online',
-      appName: 'Edura School Management System',
+      appName: 'PCEA St Andrews Kindergarten SMS',
       database: { provider: 'Embedded School Database (Active)', connected: true }
     };
   },

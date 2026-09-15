@@ -212,9 +212,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* School Footer Note */}
       <div className="p-3 border-t border-slate-100 text-[11px] text-slate-400 flex items-center justify-between">
-        <span className="font-medium">Edura 2026</span>
+        <span className="font-medium">PCEA St Andrews Kindergarten</span>
         <span className="text-[10px] font-semibold text-orange-600 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-200/50">
-          v2.4 Pro
+          2026 AY
         </span>
       </div>
     </aside>

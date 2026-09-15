@@ -85,10 +85,10 @@ export const SystemSpecificationViewer: React.FC = () => {
             Plain Language Operational Standard
           </span>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-950 font-serif">
-            Edura School Management System
+            PCEA St Andrews Kindergarten
           </h1>
           <p className="text-sm font-serif italic text-slate-600">
-            Comprehensive System Specification & Operational Guide
+            School Management System — Operational Specification & Staff Guide
           </p>
           <p className="text-xs text-slate-500 font-medium pt-2">
             Written in Everyday Language — Free of Technical Jargon • Approved for School Administrative Operations
@@ -103,7 +103,7 @@ export const SystemSpecificationViewer: React.FC = () => {
               <span>Overview of the System & Role-Based Access</span>
             </h2>
             <p className="text-xs sm:text-sm leading-relaxed text-slate-700">
-              The Edura School Management System serves as the centralized digital administrative office for our school. It replaces paper filing cabinets, handwritten mark sheets, paper receipt booklets, and staff room noticeboards with one secure, accessible place where teachers and administrators collaborate seamlessly.
+              The PCEA St Andrews Kindergarten Management System serves as the centralized digital administrative office for our school. It replaces paper filing cabinets, handwritten mark sheets, paper receipt booklets, and staff room noticeboards with one secure, accessible place where teachers and administrators collaborate seamlessly.
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">

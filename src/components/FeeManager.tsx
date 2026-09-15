@@ -581,10 +581,10 @@ export const FeeManager: React.FC<FeeManagerProps> = ({
               {/* School Header */}
               <div className="text-center pb-3 border-b border-slate-300">
                 <h2 className="text-lg font-black text-slate-900 tracking-wider">
-                  EDURA ACADEMY
+                  PCEA ST ANDREWS KINDERGARTEN
                 </h2>
                 <p className="text-[11px] text-slate-600 font-sans">
-                  St. Theresa Campus • P.O. Box 40201, Nairobi • Tel: +254 20 678 9000
+                  PCEA St. Andrews Campus • State House Road, Nairobi • Tel: +254 20 272 3505
                 </p>
                 <div className="inline-block mt-2 px-3 py-0.5 bg-slate-900 text-white text-[10px] font-sans font-bold uppercase tracking-widest rounded-full">
                   OFFICIAL FEE PAYMENT RECEIPT

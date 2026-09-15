@@ -84,7 +84,7 @@ async function initMongoDB() {
 app.get('/api/health', (req: Request, res: Response) => {
   res.json({
     status: 'online',
-    appName: 'Edura School Management System',
+    appName: 'PCEA St Andrews Kindergarten SMS',
     timestamp: new Date().toISOString(),
     database: {
       provider: isMongoConnected ? 'MongoDB (Connected)' : 'Local High-Speed School Database (Embedded)',

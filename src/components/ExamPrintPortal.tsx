@@ -557,7 +557,7 @@ export const ExamPrintPortal: React.FC<ExamPrintPortalProps> = ({
               {/* Exam Header */}
               <div className="text-center border-b-2 border-slate-900 pb-4">
                 <h1 className="text-xl font-black uppercase tracking-wider">
-                  EDURA ACADEMY
+                  PCEA ST ANDREWS KINDERGARTEN
                 </h1>
                 <p className="text-xs font-sans uppercase font-bold text-slate-600 mt-0.5">
                   Academic Term 1 • Summative Assessment
@@ -638,7 +638,7 @@ export const ExamPrintPortal: React.FC<ExamPrintPortalProps> = ({
 
             <div className="mt-4 p-5 border-2 border-slate-900 rounded-xl bg-slate-50/60 text-xs font-mono space-y-3">
               <div className="text-center pb-2 border-b border-slate-300">
-                <div className="font-black text-sm text-slate-900">EDURA PRINT ROOM REQUISITION</div>
+                <div className="font-black text-sm text-slate-900">PCEA ST ANDREWS PRINT ROOM REQUISITION</div>
                 <div className="text-[10px] text-slate-500">Ticket ID: #{selectedExamSlip.id}</div>
               </div>
 
