@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   CalendarDays,
   Plus,
@@ -9,7 +9,8 @@ import {
   User,
   AlertTriangle,
   CheckCircle,
-  X
+  X,
+  Filter
 } from 'lucide-react';
 import { TimetableSlot, UserRole } from '../types';
 
@@ -29,9 +30,31 @@ export const TimetableManager: React.FC<TimetableManagerProps> = ({
   const [viewMode, setViewMode] = useState<'class' | 'teacher'>('class');
   const [selectedGrade, setSelectedGrade] = useState('Grade 10-A');
   const [selectedTeacher, setSelectedTeacher] = useState('Sarah Jenkins');
+  const [selectedTeacherFilter, setSelectedTeacherFilter] = useState<string>('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [conflictError, setConflictError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Available unique teachers across all scheduled slots
+  const availableTeachers = useMemo(() => {
+    const teacherSet = new Set<string>();
+    slots.forEach((s) => {
+      if (s.teacherName) teacherSet.add(s.teacherName);
+    });
+    // Ensure core school faculty members are always selectable
+    ['Sarah Jenkins', 'Marcus Vance', 'Dr. Helen Oloo', 'Claire Kamau'].forEach((t) => teacherSet.add(t));
+    return Array.from(teacherSet).sort();
+  }, [slots]);
+
+  // Available unique grades across all scheduled slots
+  const availableGrades = useMemo(() => {
+    const gradeSet = new Set<string>();
+    slots.forEach((s) => {
+      if (s.grade) gradeSet.add(s.grade);
+    });
+    ['Grade 9-A', 'Grade 10-A', 'Grade 11-A', 'Grade 12-A'].forEach((g) => gradeSet.add(g));
+    return Array.from(gradeSet).sort();
+  }, [slots]);
 
   // New slot form
   const [formData, setFormData] = useState({
@@ -66,10 +89,20 @@ export const TimetableManager: React.FC<TimetableManagerProps> = ({
   ];
 
   const filteredSlots = slots.filter((slot) => {
-    if (viewMode === 'class') {
-      return slot.grade.toLowerCase() === selectedGrade.toLowerCase();
+    if (viewMode === 'teacher') {
+      const activeTeacher = selectedTeacherFilter !== 'all' ? selectedTeacherFilter : selectedTeacher;
+      return slot.teacherName.toLowerCase() === activeTeacher.toLowerCase();
     } else {
-      return slot.teacherName.toLowerCase() === selectedTeacher.toLowerCase();
+      // Class view
+      const matchesGrade = slot.grade.toLowerCase() === selectedGrade.toLowerCase();
+      if (!matchesGrade) return false;
+
+      // When teacher filter is active, only show slots associated with that specific selected teacher
+      if (selectedTeacherFilter !== 'all') {
+        return slot.teacherName.toLowerCase() === selectedTeacherFilter.toLowerCase();
+      }
+
+      return true;
     }
   });
 
@@ -164,59 +197,170 @@ export const TimetableManager: React.FC<TimetableManagerProps> = ({
       </div>
 
       {/* View Switcher & Selector */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap gap-4 items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-xs font-bold text-slate-500">View By:</span>
-          <div className="flex items-center bg-slate-100 p-0.5 rounded-xl text-xs font-semibold">
-            <button
-              onClick={() => setViewMode('class')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                viewMode === 'class' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-500'
-              }`}
+      <div
+        id="timetable-controls"
+        className="timetable-controls bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs flex flex-wrap gap-4 items-center justify-between"
+      >
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2.5">
+            <span className="text-xs font-bold text-slate-500">View By:</span>
+            <div className="flex items-center bg-slate-100 p-0.5 rounded-xl text-xs font-semibold">
+              <button
+                id="timetable-view-class-btn"
+                type="button"
+                onClick={() => setViewMode('class')}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  viewMode === 'class' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                Class / Grade View
+              </button>
+              <button
+                id="timetable-view-teacher-btn"
+                type="button"
+                onClick={() => {
+                  setViewMode('teacher');
+                  if (selectedTeacherFilter !== 'all') {
+                    setSelectedTeacher(selectedTeacherFilter);
+                  }
+                }}
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                  viewMode === 'teacher' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-500 hover:text-slate-800'
+                }`}
+              >
+                Teacher Schedule View
+              </button>
+            </div>
+          </div>
+
+          {viewMode === 'class' && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-slate-500 font-medium">Select Class:</span>
+              <select
+                id="timetable-grade-select"
+                value={selectedGrade}
+                onChange={(e) => setSelectedGrade(e.target.value)}
+                className="text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 cursor-pointer text-slate-800"
+              >
+                {availableGrades.map((grade) => (
+                  <option key={grade} value={grade}>
+                    {grade}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+
+        {/* Teacher Filter Dropdown & View Toggle Controls */}
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2">
+            <label
+              htmlFor="timetable-teacher-filter"
+              className="text-xs font-bold text-slate-600 flex items-center gap-1.5 whitespace-nowrap"
             >
-              Class / Grade View
+              <Filter className="w-3.5 h-3.5 text-orange-500" />
+              <span>Filter by Teacher:</span>
+            </label>
+            <select
+              id="timetable-teacher-filter"
+              value={selectedTeacherFilter}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedTeacherFilter(val);
+                if (val !== 'all') {
+                  setSelectedTeacher(val);
+                }
+              }}
+              className="text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-orange-500/20 text-slate-800 cursor-pointer"
+            >
+              <option value="all">All Teachers (Show All)</option>
+              {availableTeachers.map((teacher) => (
+                <option key={teacher} value={teacher}>
+                  Only show {teacher}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Quick Toggle View & Clear Actions */}
+          {selectedTeacherFilter !== 'all' && (
+            <div className="flex items-center gap-1.5">
+              <button
+                id="timetable-toggle-teacher-view-btn"
+                type="button"
+                onClick={() => {
+                  if (viewMode === 'class') {
+                    setViewMode('teacher');
+                    setSelectedTeacher(selectedTeacherFilter);
+                  } else {
+                    setViewMode('class');
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-orange-50 hover:bg-orange-100 text-orange-800 border border-orange-200 transition-colors cursor-pointer"
+                title="Toggle view between class schedule and full teacher schedule"
+              >
+                <User className="w-3.5 h-3.5 text-orange-600" />
+                <span>
+                  {viewMode === 'teacher' ? 'View in Class Grid' : `View ${selectedTeacherFilter}'s Full Schedule`}
+                </span>
+              </button>
+
+              <button
+                id="timetable-clear-teacher-filter-btn"
+                type="button"
+                onClick={() => setSelectedTeacherFilter('all')}
+                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                title="Clear teacher filter and show all"
+              >
+                <X className="w-3.5 h-3.5" />
+                <span>Clear</span>
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Active Filter Notification Banner */}
+      {selectedTeacherFilter !== 'all' && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-2.5 rounded-xl bg-orange-50 border border-orange-200 text-xs text-orange-950 animate-in fade-in duration-150">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-orange-500 shrink-0 animate-pulse" />
+            <span>
+              Teacher Filter Active: Only displaying slots associated with{' '}
+              <strong className="font-bold text-orange-900">{selectedTeacherFilter}</strong>
+              {viewMode === 'class' ? (
+                <> in <strong>{selectedGrade}</strong> ({filteredSlots.length} periods found)</>
+              ) : (
+                <> across all classes ({filteredSlots.length} weekly periods scheduled)</>
+              )}
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                if (viewMode === 'class') {
+                  setViewMode('teacher');
+                  setSelectedTeacher(selectedTeacherFilter);
+                } else {
+                  setViewMode('class');
+                }
+              }}
+              className="text-orange-800 hover:text-orange-950 font-bold underline cursor-pointer text-xs"
+            >
+              {viewMode === 'class' ? 'Toggle to Full School Schedule' : `Toggle to ${selectedGrade} Only`}
             </button>
             <button
-              onClick={() => setViewMode('teacher')}
-              className={`px-3 py-1.5 rounded-lg transition-all ${
-                viewMode === 'teacher' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-500'
-              }`}
+              type="button"
+              onClick={() => setSelectedTeacherFilter('all')}
+              className="text-slate-600 hover:text-slate-900 font-bold cursor-pointer text-xs"
             >
-              Teacher Schedule View
+              Reset Filter
             </button>
           </div>
         </div>
-
-        {viewMode === 'class' ? (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500">Select Class:</span>
-            <select
-              value={selectedGrade}
-              onChange={(e) => setSelectedGrade(e.target.value)}
-              className="text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none"
-            >
-              <option value="Grade 10-A">Grade 10-A</option>
-              <option value="Grade 11-A">Grade 11-A</option>
-              <option value="Grade 9-A">Grade 9-A</option>
-              <option value="Grade 12-A">Grade 12-A</option>
-            </select>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-500">Select Instructor:</span>
-            <select
-              value={selectedTeacher}
-              onChange={(e) => setSelectedTeacher(e.target.value)}
-              className="text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none"
-            >
-              <option value="Sarah Jenkins">Sarah Jenkins (Math & Physics)</option>
-              <option value="Marcus Vance">Marcus Vance (Literature)</option>
-              <option value="Dr. Helen Oloo">Dr. Helen Oloo (Chemistry)</option>
-              <option value="Claire Kamau">Claire Kamau (Biology)</option>
-            </select>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Weekly Grid */}
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
