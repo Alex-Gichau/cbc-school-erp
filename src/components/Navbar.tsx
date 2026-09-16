@@ -11,7 +11,9 @@ import {
   Bell,
   SlidersHorizontal,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 import { User } from '../types';
 
@@ -21,6 +23,8 @@ interface NavbarProps {
   onSwitchUser: (user: User) => void;
   onOpenSpec: () => void;
   dbStatus: { provider: string; connected: boolean };
+  isSidebarCollapsed?: boolean;
+  onToggleSidebar?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -28,15 +32,34 @@ export const Navbar: React.FC<NavbarProps> = ({
   users,
   onSwitchUser,
   onOpenSpec,
-  dbStatus
+  dbStatus,
+  isSidebarCollapsed = false,
+  onToggleSidebar
 }) => {
   const [showDropdown, setShowDropdown] = React.useState(false);
 
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-slate-200/90 shadow-xs">
       <div className="max-w-[1700px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-        {/* Left: Brand Identity with the Signature Warm Orange / Coral Accent */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Left: Brand Identity & Sidebar Toggle */}
+        <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+          {onToggleSidebar && (
+            <button
+              id="navbar-sidebar-toggle-btn"
+              type="button"
+              onClick={onToggleSidebar}
+              className="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer border border-slate-200/60"
+              title={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              aria-label={isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {isSidebarCollapsed ? (
+                <PanelLeftOpen className="w-4 h-4 text-orange-600" />
+              ) : (
+                <PanelLeftClose className="w-4 h-4 text-slate-600" />
+              )}
+            </button>
+          )}
+
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-orange-600 to-orange-500 flex items-center justify-center text-white shadow-md shadow-orange-500/20 ring-2 ring-orange-500/20">
             <GraduationCap className="w-5 h-5 text-white" />
           </div>
