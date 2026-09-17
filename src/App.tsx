@@ -342,8 +342,8 @@ export default function App() {
       />
 
       {/* Main App Container */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar */}
+      <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+        {/* Sidebar on desktop / Middle Navbar on mobile */}
         <Sidebar
           currentTab={activeTab}
           onSelectTab={(tab) => setActiveTab(tab)}
@@ -354,7 +354,7 @@ export default function App() {
         />
 
         {/* Dynamic Content Body */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-6 lg:p-8 xl:p-8 2xl:p-10">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 lg:p-8 xl:p-8 2xl:p-10 pb-24 md:pb-8">
           <div className="w-full max-w-7xl xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto space-y-6">
             {/* Action Toast Feedback */}
             {toastMessage && (
