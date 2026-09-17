@@ -17,7 +17,8 @@ import {
   Layers,
   Sparkles,
   Shield,
-  GraduationCap
+  GraduationCap,
+  SlidersHorizontal
 } from 'lucide-react';
 import { UserRole } from '../types';
 
@@ -30,7 +31,8 @@ export type TabType =
   | 'timetable'
   | 'exams'
   | 'reports'
-  | 'specification';
+  | 'specification'
+  | 'settings';
 
 interface SidebarProps {
   currentTab: TabType;
@@ -123,8 +125,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
       ]
     },
     {
-      title: 'DOCUMENTATION',
+      title: 'ADMINISTRATION & SETTINGS',
       items: [
+        {
+          id: 'settings' as TabType,
+          label: 'System Settings',
+          subLabel: 'Permissions & Access Matrix',
+          icon: SlidersHorizontal,
+          roles: ['admin', 'teacher'] as UserRole[]
+        },
         {
           id: 'specification' as TabType,
           label: 'System Specification',

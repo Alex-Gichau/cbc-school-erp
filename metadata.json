@@ -1,6 +1,6 @@
 {
   "name": "Edura School Management System",
-  "description": "Comprehensive school management system for PCEA St Andrews Kindergarten with role-based access for administrators and teachers, learner enrolment, fee tracking, grading, attendance analytics, timetable scheduling, exam paper printing workflow, and operational guides.",
+  "description": "Comprehensive school management system for PCEA St Andrews Kindergarten with role-based access for administrators and teachers, learner enrolment, fee tracking, grading, attendance analytics, timetable scheduling, exam paper printing workflow, system settings permissions matrix, and operational guides.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

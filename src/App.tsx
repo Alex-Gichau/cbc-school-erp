@@ -15,6 +15,7 @@ import { TimetableManager } from './components/TimetableManager';
 import { ExamPrintPortal } from './components/ExamPrintPortal';
 import { ReportCardsManager } from './components/ReportCardsManager';
 import { SystemSpecificationViewer } from './components/SystemSpecificationViewer';
+import { SystemSettingsManager } from './components/SystemSettingsManager';
 
 import {
   User,
@@ -450,6 +451,16 @@ export default function App() {
             {/* Tab: Non-Technical System Specification */}
             {activeTab === 'specification' && (
               <SystemSpecificationViewer />
+            )}
+
+            {/* Tab: System Settings & Permissions Matrix */}
+            {activeTab === 'settings' && (
+              <SystemSettingsManager
+                currentUser={currentUser}
+                users={users}
+                onSwitchUser={handleSwitchUser}
+                userRole={currentUser.role}
+              />
             )}
           </div>
         </main>
