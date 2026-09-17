@@ -368,9 +368,9 @@ export const TimetableManager: React.FC<TimetableManagerProps> = ({
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-slate-900 text-white font-bold text-center">
-                <th className="p-3 w-28 text-left border-r border-slate-800">Time / Period</th>
+                <th className="p-3 w-28 md:w-32 lg:w-[12.5%] text-left border-r border-slate-800 shrink-0">Time / Period</th>
                 {days.map((day) => (
-                  <th key={day} className="p-3 border-r border-slate-800 last:border-r-0 min-w-[170px]">
+                  <th key={day} className="p-3 border-r border-slate-800 last:border-r-0 min-w-[140px] md:min-w-[150px] lg:min-w-0 lg:w-[17.5%]">
                     {day}
                   </th>
                 ))}

@@ -284,7 +284,7 @@ export const GradingTracker: React.FC<GradingTrackerProps> = ({
       </div>
 
       {/* Class Performance Metrics Strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-xl border border-slate-200/80 shadow-xs">
           <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
             Class Mean Score
@@ -339,10 +339,10 @@ export const GradingTracker: React.FC<GradingTrackerProps> = ({
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200 text-[11px]">
               <tr>
-                <th className="py-3 px-4">Adm No.</th>
-                <th className="py-3 px-4">Learner Name</th>
-                <th className="py-3 px-4 w-28">Score (/100)</th>
-                <th className="py-3 px-4 w-32">Letter Grade</th>
+                <th className="py-3 px-4 w-28 md:w-32">Adm No.</th>
+                <th className="py-3 px-4 md:w-48 lg:w-60">Learner Name</th>
+                <th className="py-3 px-4 w-28 md:w-32 text-center">Score (/100)</th>
+                <th className="py-3 px-4 w-32 md:w-36 text-center">Letter Grade</th>
                 <th className="py-3 px-4">Teacher's Pedagogical Remarks</th>
               </tr>
             </thead>

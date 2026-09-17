@@ -145,7 +145,7 @@ export const ExamPrintPortal: React.FC<ExamPrintPortalProps> = ({
       </div>
 
       {/* Filter and Status Pipeline Summary */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
         <button
           onClick={() => setStatusFilter('all')}
           className={`p-3 rounded-xl border text-left transition-all cursor-pointer ${
@@ -231,13 +231,13 @@ export const ExamPrintPortal: React.FC<ExamPrintPortalProps> = ({
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200 text-[11px]">
               <tr>
-                <th className="py-3 px-4">Exam Details</th>
-                <th className="py-3 px-4">Subject & Grade</th>
-                <th className="py-3 px-4">Exam Date</th>
-                <th className="py-3 px-4">Copies & Specs</th>
-                <th className="py-3 px-4">Teacher</th>
-                <th className="py-3 px-4">Print Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <th className="py-3 px-4 min-w-[180px] md:min-w-[200px]">Exam Details</th>
+                <th className="py-3 px-4 min-w-[120px]">Subject & Grade</th>
+                <th className="py-3 px-4 min-w-[110px]">Exam Date</th>
+                <th className="py-3 px-4 min-w-[130px]">Copies & Specs</th>
+                <th className="py-3 px-4 min-w-[120px]">Teacher</th>
+                <th className="py-3 px-4 min-w-[120px]">Print Status</th>
+                <th className="py-3 px-4 text-right min-w-[180px] md:min-w-[210px]">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">

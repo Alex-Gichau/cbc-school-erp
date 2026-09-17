@@ -284,7 +284,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             </div>
 
             {/* Visual SVG Curve in Warm Orange Palette */}
-            <div className="relative h-48 w-full bg-orange-50/20 rounded-xl p-2 border border-orange-100/50 overflow-hidden">
+            <div className="relative h-48 sm:h-52 md:h-56 lg:h-52 xl:h-60 w-full bg-orange-50/20 rounded-xl p-2 border border-orange-100/50 overflow-hidden">
               <svg className="w-full h-full" viewBox="0 0 500 150" preserveAspectRatio="none">
                 {/* Horizontal Guideline 95% Target */}
                 <line x1="0" y1="25" x2="500" y2="25" stroke="#0f172a" strokeDasharray="4 4" strokeWidth="1.2" opacity="0.3" />
@@ -391,7 +391,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         </div>
 
         {/* Right Column: Quick School Actions (styled with Dark Circles like Screenshot's Quick IT Actions) */}
-        <div className="space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-5">
           {/* Quick IT Actions Panel */}
           <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-xs">
             <div className="flex items-center gap-2 mb-4">
@@ -488,7 +488,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           </div>
 
           {/* Chronic Absenteeism Alerts */}
-          <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-xs">
+          <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-xs md:col-span-2 lg:col-span-1">
             <div className="flex items-center gap-2 mb-2">
               <AlertTriangle className="w-4 h-4 text-orange-500" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900">

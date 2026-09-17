@@ -200,7 +200,7 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
         </div>
 
         {/* Live Counters */}
-        <div className="flex items-center gap-3 text-xs">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-xs">
           <div className="px-3 py-1 rounded-lg bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">
             {presentCount} Present
           </div>
@@ -225,9 +225,9 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
           <table className="w-full text-left text-xs">
             <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200 text-[11px]">
               <tr>
-                <th className="py-3 px-4">Adm No.</th>
-                <th className="py-3 px-4">Learner Name</th>
-                <th className="py-3 px-4 text-center">Status Selection</th>
+                <th className="py-3 px-4 w-28 md:w-32">Adm No.</th>
+                <th className="py-3 px-4 md:w-44 lg:w-56">Learner Name</th>
+                <th className="py-3 px-4 text-center md:w-72 lg:w-80">Status Selection</th>
                 <th className="py-3 px-4">Reason / Notes (If Absent or Late)</th>
               </tr>
             </thead>

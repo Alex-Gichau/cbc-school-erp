@@ -325,7 +325,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col antialiased">
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col antialiased w-full overflow-x-hidden">
       {/* Top Header Navbar */}
       <Navbar
         currentUser={currentUser}
@@ -335,6 +335,9 @@ export default function App() {
         dbStatus={dbStatus}
         isSidebarCollapsed={isSidebarCollapsed}
         onToggleSidebar={handleToggleSidebar}
+        pendingExamsCount={pendingExamsCount}
+        activeStudentsCount={students.filter((s) => s.status === 'active').length}
+        onNavigateTab={(tab) => setActiveTab(tab)}
       />
 
       {/* Main App Container */}
@@ -350,8 +353,8 @@ export default function App() {
         />
 
         {/* Dynamic Content Body */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <div className="max-w-7xl mx-auto space-y-6">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-6 lg:p-8 xl:p-8 2xl:p-10">
+          <div className="w-full max-w-7xl xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto space-y-6">
             {/* Action Toast Feedback */}
             {toastMessage && (
               <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-3 duration-200">

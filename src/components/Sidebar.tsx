@@ -136,73 +136,93 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }
   ];
 
-  return (
-    <aside
-      id="app-sidebar"
-      className={`bg-white text-slate-700 flex flex-col shrink-0 lg:min-h-[calc(100vh-4rem)] border-r border-slate-200/90 shadow-xs select-none transition-all duration-300 ease-in-out ${
-        isCollapsed ? 'w-full lg:w-[74px]' : 'w-full lg:w-64'
-      }`}
-    >
-      {/* Top Header & Role Indicator */}
-      <div className={`border-b border-slate-100 ${isCollapsed ? 'p-2.5 flex flex-col items-center gap-2' : 'p-3.5'}`}>
-        {!isCollapsed ? (
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex-1 px-3 py-2 rounded-xl bg-orange-50/70 border border-orange-200/60 flex items-center justify-between">
-              <div>
-                <div className="text-[10px] uppercase font-extrabold tracking-wider text-orange-600">
-                  Active Workspace
-                </div>
-                <div className="text-xs font-bold text-slate-900 capitalize">
-                  {userRole === 'admin' ? 'Principal & Bursar' : 'Teaching Staff'}
-                </div>
-              </div>
-              <span
-                className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
-                  userRole === 'admin' ? 'bg-orange-500 text-white shadow-xs' : 'bg-slate-800 text-white'
-                }`}
-              >
-                {userRole === 'admin' ? 'Admin' : 'Teacher'}
-              </span>
-            </div>
+  const handleTabClick = (tabId: TabType) => {
+    onSelectTab(tabId);
+    // On small screens (< md), auto-close sidebar after selection
+    if (window.innerWidth < 768 && !isCollapsed && onToggleCollapse) {
+      onToggleCollapse();
+    }
+  };
 
-            {onToggleCollapse && (
-              <button
-                id="sidebar-collapse-toggle-btn"
-                type="button"
-                onClick={onToggleCollapse}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
-                title="Collapse sidebar (hide text labels)"
-                aria-label="Collapse sidebar"
-              >
-                <PanelLeftClose className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center gap-2 w-full">
-            {onToggleCollapse && (
-              <button
-                id="sidebar-expand-toggle-btn"
-                type="button"
-                onClick={onToggleCollapse}
-                className="w-10 h-10 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center justify-center cursor-pointer border border-transparent hover:border-orange-200"
-                title="Expand sidebar"
-                aria-label="Expand sidebar"
-              >
-                <PanelLeftOpen className="w-5 h-5 text-orange-600" />
-              </button>
-            )}
-            <div
-              className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider text-center ${
-                userRole === 'admin' ? 'bg-orange-500 text-white' : 'bg-slate-800 text-white'
-              }`}
-              title={`Active role: ${userRole === 'admin' ? 'School Administrator' : 'Class Teacher'}`}
-            >
-              {userRole === 'admin' ? 'ADM' : 'TCH'}
+  return (
+    <>
+      {/* Mobile Backdrop when drawer is open on small screens */}
+      {!isCollapsed && (
+        <div
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs z-40 md:hidden animate-in fade-in duration-200"
+          onClick={onToggleCollapse}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        id="app-sidebar"
+        className={`bg-white text-slate-700 flex flex-col shrink-0 min-h-[calc(100vh-4rem)] border-r border-slate-200/90 shadow-xs select-none transition-all duration-300 ease-in-out ${
+          isCollapsed
+            ? 'hidden md:flex md:w-16 lg:w-[74px]'
+            : 'fixed inset-y-0 left-0 z-50 w-72 md:relative md:z-auto md:w-60 lg:w-64'
+        }`}
+      >
+        {/* Top Header & Role Indicator */}
+        <div className={`border-b border-slate-100 ${isCollapsed ? 'p-2.5 flex flex-col items-center gap-2' : 'p-3.5'}`}>
+          {!isCollapsed ? (
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex-1 px-3 py-2 rounded-xl bg-orange-50/70 border border-orange-200/60 flex items-center justify-between">
+                <div>
+                  <div className="text-[10px] uppercase font-extrabold tracking-wider text-orange-600">
+                    Active Workspace
+                  </div>
+                  <div className="text-xs font-bold text-slate-900 capitalize">
+                    {userRole === 'admin' ? 'Principal & Bursar' : 'Teaching Staff'}
+                  </div>
+                </div>
+                <span
+                  className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                    userRole === 'admin' ? 'bg-orange-500 text-white shadow-xs' : 'bg-slate-800 text-white'
+                  }`}
+                >
+                  {userRole === 'admin' ? 'Admin' : 'Teacher'}
+                </span>
+              </div>
+
+              {onToggleCollapse && (
+                <button
+                  id="sidebar-collapse-toggle-btn"
+                  type="button"
+                  onClick={onToggleCollapse}
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+                  title="Collapse sidebar (hide text labels)"
+                  aria-label="Collapse sidebar"
+                >
+                  <PanelLeftClose className="w-4 h-4" />
+                </button>
+              )}
             </div>
-          </div>
-        )}
-      </div>
+          ) : (
+            <div className="flex flex-col items-center gap-2 w-full">
+              {onToggleCollapse && (
+                <button
+                  id="sidebar-expand-toggle-btn"
+                  type="button"
+                  onClick={onToggleCollapse}
+                  className="w-10 h-10 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-orange-50 hover:text-orange-600 transition-colors flex items-center justify-center cursor-pointer border border-transparent hover:border-orange-200"
+                  title="Expand sidebar"
+                  aria-label="Expand sidebar"
+                >
+                  <PanelLeftOpen className="w-5 h-5 text-orange-600" />
+                </button>
+              )}
+              <div
+                className={`text-[10px] font-black px-2 py-0.5 rounded-md uppercase tracking-wider text-center ${
+                  userRole === 'admin' ? 'bg-orange-500 text-white' : 'bg-slate-800 text-white'
+                }`}
+                title={`Active role: ${userRole === 'admin' ? 'School Administrator' : 'Class Teacher'}`}
+              >
+                {userRole === 'admin' ? 'ADM' : 'TCH'}
+              </div>
+            </div>
+          )}
+        </div>
 
       {/* Navigation Sections */}
       <div className={`flex-1 overflow-y-auto py-3 space-y-4 ${isCollapsed ? 'px-2' : 'px-2'}`}>
@@ -231,7 +251,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <button
                           id={`sidebar-tab-collapsed-${item.id}`}
                           type="button"
-                          onClick={() => onSelectTab(item.id)}
+                          onClick={() => handleTabClick(item.id)}
                           className={`w-11 h-11 mx-auto rounded-xl flex items-center justify-center transition-all cursor-pointer relative ${
                             isActive
                               ? 'bg-orange-500 text-white shadow-md shadow-orange-500/25 ring-2 ring-orange-400/40'
@@ -267,7 +287,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       key={item.id}
                       id={`sidebar-tab-${item.id}`}
                       type="button"
-                      onClick={() => onSelectTab(item.id)}
+                      onClick={() => handleTabClick(item.id)}
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-left transition-all group cursor-pointer ${
                         isActive
                           ? 'border-l-[3px] border-orange-500 bg-orange-50/70 text-orange-600 font-semibold shadow-xs'
@@ -326,5 +346,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
       </div>
     </aside>
+    </>
   );
 };
