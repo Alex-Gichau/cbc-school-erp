@@ -267,29 +267,86 @@ export default function App() {
     recordedBy: string;
   }) => {
     try {
-      await api.recordAttendance(data);
+      const res = await api.recordAttendance(data);
 
-      const present = data.records.filter((r) => r.status === 'present').length;
-      const total = data.records.length;
-      const rate = total > 0 ? Math.round((present / total) * 100) : 100;
+      const presentCount = data.records.filter((r) => r.status === 'present').length;
+      const lateCount = data.records.filter((r) => r.status === 'late').length;
+      const absentCount = data.records.filter((r) => r.status === 'absent').length;
+      const excusedCount = data.records.filter((r) => r.status === 'excused').length;
+      const totalMarked = data.records.length;
+      const gradeRate = totalMarked > 0 ? Math.round(((presentCount + lateCount) / totalMarked) * 1000) / 10 : 100;
 
-      // Update analytics
-      setAnalytics((prev) => ({
-        ...prev,
-        presentToday: prev.presentToday + (present - 1),
-        dailyTrends: [
-          ...prev.dailyTrends.slice(1),
-          {
-            date: data.date,
-            dayLabel: 'Today',
-            rate,
-            present,
-            absent: total - present
+      if (res?.analytics) {
+        setAnalytics(res.analytics);
+      } else {
+        setAnalytics((prev) => {
+          // 1. Update gradeComparison
+          const gradeIdx = prev.gradeComparison.findIndex(
+            (g) => g.grade.toLowerCase() === data.grade.toLowerCase()
+          );
+          const newGradeComp = [...prev.gradeComparison];
+          if (gradeIdx >= 0) {
+            newGradeComp[gradeIdx] = {
+              ...newGradeComp[gradeIdx],
+              rate: gradeRate,
+              absentCount,
+              totalStudents: totalMarked > 0 ? totalMarked : newGradeComp[gradeIdx].totalStudents
+            };
+          } else {
+            newGradeComp.push({
+              grade: data.grade,
+              rate: gradeRate,
+              totalStudents: totalMarked,
+              absentCount
+            });
           }
-        ]
-      }));
 
-      showToast(`Attendance recorded for ${data.grade} (${rate}% present).`);
+          const totalAbsent = newGradeComp.reduce((sum, g) => sum + g.absentCount, 0);
+          const totalLearners = prev.totalStudents || 340;
+          const totalPresent = Math.max(0, totalLearners - totalAbsent);
+          const schoolRate = Math.round((totalPresent / totalLearners) * 1000) / 10;
+
+          const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const parsed = new Date(data.date);
+          const dayLabel = !isNaN(parsed.getTime()) ? dayNames[parsed.getDay()] : 'Today';
+
+          const newDailyTrends = [...prev.dailyTrends];
+          const trendIdx = newDailyTrends.findIndex((t) => t.date === data.date);
+          if (trendIdx >= 0) {
+            newDailyTrends[trendIdx] = {
+              ...newDailyTrends[trendIdx],
+              rate: schoolRate,
+              present: totalPresent,
+              absent: totalAbsent
+            };
+          } else {
+            newDailyTrends.push({
+              date: data.date,
+              dayLabel,
+              rate: schoolRate,
+              present: totalPresent,
+              absent: totalAbsent
+            });
+            newDailyTrends.sort((a, b) => a.date.localeCompare(b.date));
+          }
+
+          const sumRates = newDailyTrends.reduce((acc, t) => acc + t.rate, 0);
+          const overallRate = Math.round((sumRates / newDailyTrends.length) * 10) / 10;
+
+          return {
+            ...prev,
+            overallRate,
+            presentToday: totalPresent,
+            absentToday: totalAbsent,
+            lateToday: lateCount,
+            excusedToday: excusedCount,
+            gradeComparison: newGradeComp,
+            dailyTrends: newDailyTrends
+          };
+        });
+      }
+
+      showToast(`Attendance recorded for ${data.grade} (${gradeRate}% present). School-wide trends updated.`);
     } catch (err: any) {
       showToast(`Error saving attendance: ${err.message}`);
     }
@@ -354,7 +411,7 @@ export default function App() {
         />
 
         {/* Dynamic Content Body */}
-        <main className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 lg:p-8 xl:p-8 2xl:p-10 pb-24 md:pb-8">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 lg:p-8 xl:p-8 2xl:p-10 pb-8">
           <div className="w-full max-w-7xl xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto space-y-6">
             {/* Action Toast Feedback */}
             {toastMessage && (

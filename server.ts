@@ -361,18 +361,78 @@ app.post('/api/attendance/mark', (req: Request, res: Response) => {
     attendanceRecordsStore.push(item);
   });
 
-  // Re-calculate analytics summary
+  // Re-calculate analytics summary accurately
   const totalMarked = records.length;
-  const todayRate = totalMarked > 0 ? Math.round(((presentCount + lateCount) / totalMarked) * 1000) / 10 : 95.0;
+  const gradePresent = presentCount + lateCount;
+  const gradeRate = totalMarked > 0 ? Math.round((gradePresent / totalMarked) * 1000) / 10 : 100;
 
-  attendanceAnalyticsStore.presentToday = 322 + (presentCount - 30);
-  attendanceAnalyticsStore.absentToday = absentCount;
+  // 1. Update gradeComparison for this grade
+  const existingGradeIdx = attendanceAnalyticsStore.gradeComparison.findIndex(
+    g => g.grade.toLowerCase() === grade.toLowerCase()
+  );
+  if (existingGradeIdx >= 0) {
+    attendanceAnalyticsStore.gradeComparison[existingGradeIdx] = {
+      ...attendanceAnalyticsStore.gradeComparison[existingGradeIdx],
+      rate: gradeRate,
+      absentCount: absentCount,
+      totalStudents: totalMarked > 0 ? totalMarked : attendanceAnalyticsStore.gradeComparison[existingGradeIdx].totalStudents
+    };
+  } else {
+    attendanceAnalyticsStore.gradeComparison.push({
+      grade,
+      rate: gradeRate,
+      totalStudents: totalMarked,
+      absentCount: absentCount
+    });
+  }
+
+  // 2. School-wide numbers across all grades in gradeComparison
+  const totalAbsentAcrossGrades = attendanceAnalyticsStore.gradeComparison.reduce(
+    (sum, g) => sum + g.absentCount, 0
+  );
+  const totalStudents = attendanceAnalyticsStore.totalStudents || 340;
+  const totalPresentToday = Math.max(0, totalStudents - totalAbsentAcrossGrades);
+  const schoolWideRate = Math.round((totalPresentToday / totalStudents) * 1000) / 10;
+
+  attendanceAnalyticsStore.presentToday = totalPresentToday;
+  attendanceAnalyticsStore.absentToday = totalAbsentAcrossGrades;
   attendanceAnalyticsStore.lateToday = lateCount;
   attendanceAnalyticsStore.excusedToday = excusedCount;
 
+  // 3. Update or insert dailyTrends for this date
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const parsedDate = new Date(date);
+  const dayLabel = !isNaN(parsedDate.getTime()) ? dayNames[parsedDate.getDay()] : 'Today';
+
+  const trendIdx = attendanceAnalyticsStore.dailyTrends.findIndex(t => t.date === date);
+  if (trendIdx >= 0) {
+    attendanceAnalyticsStore.dailyTrends[trendIdx] = {
+      ...attendanceAnalyticsStore.dailyTrends[trendIdx],
+      rate: schoolWideRate,
+      present: totalPresentToday,
+      absent: totalAbsentAcrossGrades
+    };
+  } else {
+    attendanceAnalyticsStore.dailyTrends.push({
+      date,
+      dayLabel,
+      rate: schoolWideRate,
+      present: totalPresentToday,
+      absent: totalAbsentAcrossGrades
+    });
+    attendanceAnalyticsStore.dailyTrends.sort((a, b) => a.date.localeCompare(b.date));
+  }
+
+  // 4. Update overallRate as the average of dailyTrends
+  if (attendanceAnalyticsStore.dailyTrends.length > 0) {
+    const sumRates = attendanceAnalyticsStore.dailyTrends.reduce((acc, t) => acc + t.rate, 0);
+    attendanceAnalyticsStore.overallRate = Math.round((sumRates / attendanceAnalyticsStore.dailyTrends.length) * 10) / 10;
+  }
+
   res.json({
     message: 'Attendance recorded successfully',
-    summary: { totalMarked, presentCount, absentCount, lateCount, excusedCount, todayRate }
+    analytics: attendanceAnalyticsStore,
+    summary: { totalMarked, presentCount, absentCount, lateCount, excusedCount, todayRate: schoolWideRate }
   });
 });
 

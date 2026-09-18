@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import {
   CalendarDays,
+  Calendar,
+  Table2,
   Plus,
   Printer,
   Trash2,
@@ -13,6 +15,7 @@ import {
   Filter
 } from 'lucide-react';
 import { TimetableSlot, UserRole } from '../types';
+import { TimetableCalendarView } from './TimetableCalendarView';
 
 interface TimetableManagerProps {
   slots: TimetableSlot[];
@@ -27,6 +30,7 @@ export const TimetableManager: React.FC<TimetableManagerProps> = ({
   onDeleteSlot,
   userRole
 }) => {
+  const [layoutMode, setLayoutMode] = useState<'monthly' | 'weekly'>('monthly');
   const [viewMode, setViewMode] = useState<'class' | 'teacher'>('class');
   const [selectedGrade, setSelectedGrade] = useState('Grade 10-A');
   const [selectedTeacher, setSelectedTeacher] = useState('Sarah Jenkins');
@@ -175,13 +179,43 @@ export const TimetableManager: React.FC<TimetableManagerProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Calendar vs Matrix Layout Switcher */}
+          <div className="flex items-center bg-slate-100 p-1 rounded-xl text-xs font-semibold">
+            <button
+              id="timetable-layout-monthly-btn"
+              type="button"
+              onClick={() => setLayoutMode('monthly')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                layoutMode === 'monthly'
+                  ? 'bg-orange-500 text-white font-bold shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Monthly Calendar</span>
+            </button>
+            <button
+              id="timetable-layout-weekly-btn"
+              type="button"
+              onClick={() => setLayoutMode('weekly')}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                layoutMode === 'weekly'
+                  ? 'bg-orange-500 text-white font-bold shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Table2 className="w-3.5 h-3.5" />
+              <span>Weekly Matrix</span>
+            </button>
+          </div>
+
           <button
             onClick={handlePrint}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs transition-colors cursor-pointer"
           >
             <Printer className="w-4 h-4" />
-            <span>Print Timetable</span>
+            <span>Print</span>
           </button>
 
           {userRole === 'admin' && (
@@ -362,94 +396,117 @@ export const TimetableManager: React.FC<TimetableManagerProps> = ({
         </div>
       )}
 
-      {/* Weekly Grid */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
-            <thead>
-              <tr className="bg-slate-900 text-white font-bold text-center">
-                <th className="p-3 w-28 md:w-32 lg:w-[12.5%] text-left border-r border-slate-800 shrink-0">Time / Period</th>
-                {days.map((day) => (
-                  <th key={day} className="p-3 border-r border-slate-800 last:border-r-0 min-w-[140px] md:min-w-[150px] lg:min-w-0 lg:w-[17.5%]">
-                    {day}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200">
-              {periodSlots.map((period, pIdx) => {
-                if (period.isBreak) {
+      {/* Conditional Layout: Monthly Calendar or Weekly Grid */}
+      {layoutMode === 'monthly' ? (
+        <TimetableCalendarView
+          slots={slots}
+          viewMode={viewMode}
+          selectedGrade={selectedGrade}
+          selectedTeacher={selectedTeacher}
+          selectedTeacherFilter={selectedTeacherFilter}
+          onAddSlot={onAddSlot}
+          onDeleteSlot={onDeleteSlot}
+          onOpenAddModalWithDay={(day, periodIndex) => {
+            setFormData((prev) => ({
+              ...prev,
+              dayOfWeek: day,
+              periodIndex: periodIndex || prev.periodIndex,
+              grade: selectedGrade
+            }));
+            setShowAddModal(true);
+          }}
+          userRole={userRole}
+        />
+      ) : (
+        /* Weekly Grid */
+        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="bg-slate-900 text-white font-bold text-center">
+                  <th className="p-3 w-28 md:w-32 lg:w-[12.5%] text-left border-r border-slate-800 shrink-0">Time / Period</th>
+                  {days.map((day) => (
+                    <th key={day} className="p-3 border-r border-slate-800 last:border-r-0 min-w-[140px] md:min-w-[150px] lg:min-w-0 lg:w-[17.5%]">
+                      {day}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-200">
+                {periodSlots.map((period, pIdx) => {
+                  if (period.isBreak) {
+                    return (
+                      <tr key={pIdx} className="bg-amber-50/70 text-center font-bold text-amber-900">
+                        <td className="p-2.5 text-xs text-slate-500 border-r border-slate-200 font-mono">
+                          {period.time}
+                        </td>
+                        <td colSpan={5} className="p-2.5 text-xs uppercase tracking-widest text-amber-800">
+                          ☕ {period.name}
+                        </td>
+                      </tr>
+                    );
+                  }
+
                   return (
-                    <tr key={pIdx} className="bg-amber-50/70 text-center font-bold text-amber-900">
-                      <td className="p-2.5 text-xs text-slate-500 border-r border-slate-200 font-mono">
-                        {period.time}
+                    <tr key={pIdx} className="hover:bg-slate-50/50">
+                      <td className="p-3 text-xs border-r border-slate-200 font-medium bg-slate-50/80">
+                        <div className="font-bold text-slate-900">{period.name}</div>
+                        <div className="text-[10px] text-slate-400 font-mono">{period.time}</div>
                       </td>
-                      <td colSpan={5} className="p-2.5 text-xs uppercase tracking-widest text-amber-800">
-                        ☕ {period.name}
-                      </td>
+
+                      {days.map((day) => {
+                        const match = filteredSlots.find(
+                          (s) => s.dayOfWeek === day && s.periodIndex === period.index
+                        );
+
+                        return (
+                          <td key={day} className="p-2 border-r border-slate-200 last:border-r-0 align-top">
+                            {match ? (
+                              <div className="p-2.5 rounded-xl bg-indigo-50/90 border border-indigo-100 flex flex-col justify-between h-full group hover:border-indigo-300 transition-colors">
+                                <div>
+                                  <div className="text-xs font-black text-indigo-950">
+                                    {match.subject}
+                                  </div>
+                                  <div className="text-[11px] text-indigo-700 font-medium flex items-center gap-1 mt-0.5">
+                                    <User className="w-3 h-3 text-indigo-500 shrink-0" />
+                                    <span className="truncate">
+                                      {viewMode === 'class' ? match.teacherName : match.grade}
+                                    </span>
+                                  </div>
+                                  <div className="text-[10px] text-slate-500 flex items-center gap-1 mt-1">
+                                    <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
+                                    <span className="truncate">{match.room}</span>
+                                  </div>
+                                </div>
+
+                                {userRole === 'admin' && (
+                                  <div className="pt-2 mt-2 border-t border-indigo-200/50 flex justify-end">
+                                    <button
+                                      onClick={() => onDeleteSlot(match.id)}
+                                      className="p-1 rounded text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors"
+                                      title="Remove this scheduled lesson"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+                            ) : (
+                              <div className="h-16 flex items-center justify-center text-[11px] text-slate-300 border border-dashed border-slate-200 rounded-xl">
+                                Free
+                              </div>
+                            )}
+                          </td>
+                        );
+                      })}
                     </tr>
                   );
-                }
-
-                return (
-                  <tr key={pIdx} className="hover:bg-slate-50/50">
-                    <td className="p-3 text-xs border-r border-slate-200 font-medium bg-slate-50/80">
-                      <div className="font-bold text-slate-900">{period.name}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">{period.time}</div>
-                    </td>
-
-                    {days.map((day) => {
-                      const match = filteredSlots.find(
-                        (s) => s.dayOfWeek === day && s.periodIndex === period.index
-                      );
-
-                      return (
-                        <td key={day} className="p-2 border-r border-slate-200 last:border-r-0 align-top">
-                          {match ? (
-                            <div className="p-2.5 rounded-xl bg-indigo-50/90 border border-indigo-100 flex flex-col justify-between h-full group hover:border-indigo-300 transition-colors">
-                              <div>
-                                <div className="text-xs font-black text-indigo-950">
-                                  {match.subject}
-                                </div>
-                                <div className="text-[11px] text-indigo-700 font-medium flex items-center gap-1 mt-0.5">
-                                  <User className="w-3 h-3 text-indigo-500 shrink-0" />
-                                  <span className="truncate">
-                                    {viewMode === 'class' ? match.teacherName : match.grade}
-                                  </span>
-                                </div>
-                                <div className="text-[10px] text-slate-500 flex items-center gap-1 mt-1">
-                                  <MapPin className="w-3 h-3 text-slate-400 shrink-0" />
-                                  <span className="truncate">{match.room}</span>
-                                </div>
-                              </div>
-
-                              {userRole === 'admin' && (
-                                <div className="pt-2 mt-2 border-t border-indigo-200/50 flex justify-end">
-                                  <button
-                                    onClick={() => onDeleteSlot(match.id)}
-                                    className="p-1 rounded text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition-colors"
-                                    title="Remove this scheduled lesson"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <div className="h-16 flex items-center justify-center text-[11px] text-slate-300 border border-dashed border-slate-200 rounded-xl">
-                              Free
-                            </div>
-                          )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Schedule Lesson Modal */}
       {showAddModal && (

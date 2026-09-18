@@ -178,9 +178,11 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
               onChange={(e) => setSelectedGrade(e.target.value)}
               className="text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 focus:outline-none"
             >
-              <option value="Grade 10-A">Grade 10-A</option>
-              <option value="Grade 11-A">Grade 11-A</option>
               <option value="Grade 9-A">Grade 9-A</option>
+              <option value="Grade 9-B">Grade 9-B</option>
+              <option value="Grade 10-A">Grade 10-A</option>
+              <option value="Grade 10-B">Grade 10-B</option>
+              <option value="Grade 11-A">Grade 11-A</option>
               <option value="Grade 12-A">Grade 12-A</option>
             </select>
           </div>

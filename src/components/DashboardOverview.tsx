@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Users,
   CheckCircle,
@@ -19,7 +19,8 @@ import {
   RefreshCw,
   FileText,
   CheckCircle2,
-  ChevronRight
+  ChevronRight,
+  Target
 } from 'lucide-react';
 import { AttendanceAnalytics, Student, UserRole } from '../types';
 import { TabType } from './Sidebar';
@@ -34,6 +35,17 @@ interface DashboardOverviewProps {
   onOpenNewStudentModal: () => void;
 }
 
+interface TrendPoint {
+  id: string;
+  label: string;
+  subLabel: string;
+  rate: number;
+  present: number;
+  absent: number;
+  total: number;
+  date: string;
+}
+
 export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   analytics,
   students,
@@ -44,6 +56,184 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   onOpenNewStudentModal
 }) => {
   const [selectedTimeframe, setSelectedTimeframe] = useState<'1D' | '1W' | '1M'>('1W');
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+
+  const schoolTotal = analytics.totalStudents || 340;
+
+  // Build dynamic points based on timeframe
+  const currentPoints: TrendPoint[] = useMemo(() => {
+    if (selectedTimeframe === '1D') {
+      const todayTotal = analytics.totalStudents || 340;
+      const todayPresent = analytics.presentToday || 322;
+      const todayAbsent = analytics.absentToday || 18;
+      const todayRate = Math.round((todayPresent / todayTotal) * 1000) / 10;
+
+      return [
+        {
+          id: 'session-1',
+          label: '08:00 AM',
+          subLabel: 'Morning Registration',
+          rate: Math.min(100, Math.round((todayRate + 0.8) * 10) / 10),
+          present: Math.min(todayTotal, todayPresent + 3),
+          absent: Math.max(0, todayAbsent - 3),
+          total: todayTotal,
+          date: 'Morning Roll Call'
+        },
+        {
+          id: 'session-2',
+          label: '10:30 AM',
+          subLabel: 'Mid-Morning Verification',
+          rate: Math.min(100, Math.round((todayRate + 0.3) * 10) / 10),
+          present: Math.min(todayTotal, todayPresent + 1),
+          absent: Math.max(0, todayAbsent - 1),
+          total: todayTotal,
+          date: 'Recess Checkpoint'
+        },
+        {
+          id: 'session-3',
+          label: '01:15 PM',
+          subLabel: 'Afternoon Roll Call',
+          rate: todayRate,
+          present: todayPresent,
+          absent: todayAbsent,
+          total: todayTotal,
+          date: 'Post-Lunch Session'
+        },
+        {
+          id: 'session-4',
+          label: '03:30 PM',
+          subLabel: 'Dismissal Standing',
+          rate: todayRate,
+          present: todayPresent,
+          absent: todayAbsent,
+          total: todayTotal,
+          date: 'Final Register'
+        }
+      ];
+    }
+
+    if (selectedTimeframe === '1W') {
+      const weekTrends = analytics.dailyTrends.length >= 6
+        ? analytics.dailyTrends.slice(-6)
+        : analytics.dailyTrends;
+
+      return weekTrends.map((d, i) => ({
+        id: d.date || `day-${i}`,
+        label: i === weekTrends.length - 1 ? 'Today' : d.dayLabel,
+        subLabel: d.date,
+        rate: d.rate,
+        present: d.present,
+        absent: d.absent,
+        total: d.present + d.absent || schoolTotal,
+        date: d.date
+      }));
+    }
+
+    // 1M (Entire 20-30 day term history)
+    return analytics.dailyTrends.map((d, i) => ({
+      id: d.date || `day-${i}`,
+      label: d.dayLabel,
+      subLabel: d.date,
+      rate: d.rate,
+      present: d.present,
+      absent: d.absent,
+      total: d.present + d.absent || schoolTotal,
+      date: d.date
+    }));
+  }, [selectedTimeframe, analytics, schoolTotal]);
+
+  // Summary Metrics
+  const avgRate = useMemo(() => {
+    if (currentPoints.length === 0) return 0;
+    const sum = currentPoints.reduce((acc, p) => acc + p.rate, 0);
+    return Math.round((sum / currentPoints.length) * 10) / 10;
+  }, [currentPoints]);
+
+  const peakPoint = useMemo(() => {
+    if (currentPoints.length === 0) return null;
+    return [...currentPoints].sort((a, b) => b.rate - a.rate)[0];
+  }, [currentPoints]);
+
+  const lowPoint = useMemo(() => {
+    if (currentPoints.length === 0) return null;
+    return [...currentPoints].sort((a, b) => a.rate - b.rate)[0];
+  }, [currentPoints]);
+
+  // Active point index
+  const activeIdx = hoveredIndex !== null && hoveredIndex < currentPoints.length
+    ? hoveredIndex
+    : currentPoints.length - 1;
+  const activePoint = currentPoints[activeIdx] || currentPoints[0];
+
+  // SVG Geometry Calculation
+  const padLeft = 35;
+  const padRight = 25;
+  const padTop = 20;
+  const padBottom = 25;
+  const svgWidth = 500;
+  const svgHeight = 150;
+
+  const minRateVal = useMemo(() => {
+    if (currentPoints.length === 0) return 85;
+    const minVal = Math.min(...currentPoints.map((p) => p.rate), 95);
+    return Math.max(70, Math.floor(minVal - 3));
+  }, [currentPoints]);
+  const maxRateVal = 100;
+
+  const getY = (rate: number) => {
+    const clamped = Math.max(minRateVal, Math.min(maxRateVal, rate));
+    const ratio = (clamped - minRateVal) / (maxRateVal - minRateVal);
+    return padTop + (1 - ratio) * (svgHeight - padTop - padBottom);
+  };
+
+  const getX = (idx: number) => {
+    if (currentPoints.length <= 1) return svgWidth / 2;
+    return padLeft + (idx / (currentPoints.length - 1)) * (svgWidth - padLeft - padRight);
+  };
+
+  const coords = useMemo(() => {
+    return currentPoints.map((p, idx) => ({
+      x: getX(idx),
+      y: getY(p.rate),
+      point: p,
+      index: idx
+    }));
+  }, [currentPoints, minRateVal]);
+
+  const y95 = getY(95);
+
+  const { linePath, areaPath } = useMemo(() => {
+    if (coords.length === 0) return { linePath: '', areaPath: '' };
+    if (coords.length === 1) {
+      const y = coords[0].y;
+      const lp = `M ${padLeft},${y} L ${svgWidth - padRight},${y}`;
+      const ap = `${lp} L ${svgWidth - padRight},${svgHeight - padBottom} L ${padLeft},${svgHeight - padBottom} Z`;
+      return { linePath: lp, areaPath: ap };
+    }
+
+    let lp = `M ${coords[0].x.toFixed(1)},${coords[0].y.toFixed(1)}`;
+    for (let i = 0; i < coords.length - 1; i++) {
+      const p0 = coords[i === 0 ? 0 : i - 1];
+      const p1 = coords[i];
+      const p2 = coords[i + 1];
+      const p3 = coords[i + 2 >= coords.length ? coords.length - 1 : i + 2];
+
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+      lp += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+    }
+
+    const last = coords[coords.length - 1];
+    const first = coords[0];
+    const ap = `${lp} L ${last.x.toFixed(1)},${svgHeight - padBottom} L ${first.x.toFixed(1)},${svgHeight - padBottom} Z`;
+
+    return { linePath: lp, areaPath: ap };
+  }, [coords]);
+
+  const activeCoord = coords[activeIdx] || coords[0];
 
   return (
     <div className="space-y-5">
@@ -129,15 +319,19 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               <span className="text-2xl font-black text-slate-900">{analytics.overallRate}%</span>
               <p className="text-[11px] text-slate-400 mt-0.5">Last 30 school days</p>
             </div>
-            {/* Sparkline Visual (Orange Waves) */}
+            {/* Sparkline Visual (Orange Waves mapped to last 7 daily trends) */}
             <div className="w-20 h-8 flex items-end gap-1">
-              {[40, 65, 55, 80, 70, 95, 88].map((h, i) => (
-                <div
-                  key={i}
-                  style={{ height: `${h}%` }}
-                  className="flex-1 bg-orange-400/80 group-hover:bg-orange-500 rounded-t transition-all"
-                ></div>
-              ))}
+              {analytics.dailyTrends.slice(-7).map((d, i) => {
+                const normalizedHeight = Math.max(25, Math.min(100, Math.round(((d.rate - 88) / 12) * 75 + 25)));
+                return (
+                  <div
+                    key={d.date || i}
+                    title={`${d.dayLabel} (${d.rate}%): ${d.present} present`}
+                    style={{ height: `${normalizedHeight}%` }}
+                    className="flex-1 bg-orange-400/80 group-hover:bg-orange-500 rounded-t transition-all"
+                  ></div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -245,16 +439,23 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 </h2>
               </div>
               <p className="text-[11px] text-slate-400 mt-0.5">
-                Continuous presence trends monitored across morning roll call registers.
+                {selectedTimeframe === '1D'
+                  ? "Real-time checkpoints and presence across today's roll-call sessions."
+                  : selectedTimeframe === '1W'
+                  ? 'Recent daily presence trends tracked against the 95.0% institutional target.'
+                  : '30-day cumulative presence history monitored across morning roll call registers.'}
               </p>
             </div>
 
-            {/* Timeframe selector matching screenshot */}
+            {/* Timeframe selector */}
             <div className="flex items-center bg-slate-100 p-0.5 rounded-lg text-[11px] font-semibold">
               {(['1D', '1W', '1M'] as const).map((tf) => (
                 <button
                   key={tf}
-                  onClick={() => setSelectedTimeframe(tf)}
+                  onClick={() => {
+                    setSelectedTimeframe(tf);
+                    setHoveredIndex(null);
+                  }}
                   className={`px-2.5 py-1 rounded transition-colors cursor-pointer ${
                     selectedTimeframe === tf
                       ? 'bg-orange-500 text-white font-bold shadow-xs'
@@ -267,10 +468,46 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
             </div>
           </div>
 
-          {/* Warm Coral-Orange Smooth Wave Visual Graphic (Matching Screenshot's Login Count Analysis) */}
-          <div className="mt-4">
+          {/* Quick Metrics Bar for Selected Timeframe */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-3 pt-1">
+            <div className="p-2.5 bg-slate-50/70 rounded-lg border border-slate-100">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Period Average</span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-base font-black text-slate-900">{avgRate}%</span>
+                <span className={`text-[10px] font-bold ${avgRate >= 95 ? 'text-emerald-600' : 'text-orange-600'}`}>
+                  {avgRate >= 95 ? '≥ 95% target' : '< 95% target'}
+                </span>
+              </div>
+            </div>
+            <div className="p-2.5 bg-slate-50/70 rounded-lg border border-slate-100">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Today's Headcount</span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-base font-black text-slate-900">{analytics.presentToday}</span>
+                <span className="text-[10px] text-slate-500 font-semibold">/ {schoolTotal}</span>
+              </div>
+            </div>
+            <div className="p-2.5 bg-slate-50/70 rounded-lg border border-slate-100">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Peak Attendance</span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className="text-base font-black text-emerald-700">{peakPoint ? `${peakPoint.rate}%` : 'N/A'}</span>
+                <span className="text-[10px] text-slate-500 truncate max-w-[60px]">{peakPoint?.label}</span>
+              </div>
+            </div>
+            <div className="p-2.5 bg-slate-50/70 rounded-lg border border-slate-100">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Target Variance</span>
+              <div className="flex items-baseline gap-1 mt-0.5">
+                <span className={`text-base font-black ${avgRate >= 95 ? 'text-emerald-700' : 'text-orange-600'}`}>
+                  {avgRate >= 95 ? `+${(avgRate - 95).toFixed(1)}%` : `${(avgRate - 95).toFixed(1)}%`}
+                </span>
+                <span className="text-[10px] text-slate-400">vs 95.0%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Dynamic SVG Wave Graphic */}
+          <div className="mt-3">
             <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-              <span className="font-semibold text-slate-700">Attendance Index (0 - 100%)</span>
+              <span className="font-semibold text-slate-700">Attendance Index ({minRateVal}% - 100%)</span>
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-1">
                   <span className="w-2.5 h-2.5 rounded-full bg-orange-500"></span>
@@ -283,65 +520,212 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               </div>
             </div>
 
-            {/* Visual SVG Curve in Warm Orange Palette */}
+            {/* Visual SVG Curve with Real Coordinate Mapping */}
             <div className="relative h-48 sm:h-52 md:h-56 lg:h-52 xl:h-60 w-full bg-orange-50/20 rounded-xl p-2 border border-orange-100/50 overflow-hidden">
+              {/* Dynamic Marker Tooltip overlay */}
+              {activePoint && (
+                <div className="absolute top-2.5 right-2.5 sm:top-3 sm:right-3 z-20 bg-white/95 border border-orange-200 shadow-sm rounded-xl p-2.5 max-w-[220px] pointer-events-none transition-all">
+                  <div className="flex items-center justify-between gap-1.5">
+                    <span className="text-[10px] font-bold text-slate-600 truncate uppercase tracking-wider">
+                      {activePoint.date || activePoint.subLabel || activePoint.label}
+                    </span>
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                        activePoint.rate >= 95
+                          ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60'
+                          : 'bg-orange-50 text-orange-700 border border-orange-200/60'
+                      }`}
+                    >
+                      {activePoint.rate >= 95 ? '≥ 95% Target' : '< 95% Target'}
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="text-lg font-black text-orange-600">{activePoint.rate}%</span>
+                    <span className="text-[11px] text-slate-500 font-medium">{activePoint.label}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-slate-600 pt-1 mt-1 border-t border-slate-100 font-semibold">
+                    <span className="text-emerald-700">{activePoint.present} Present</span>
+                    <span className="text-rose-600">{activePoint.absent} Absent</span>
+                  </div>
+                </div>
+              )}
+
               <svg className="w-full h-full" viewBox="0 0 500 150" preserveAspectRatio="none">
-                {/* Horizontal Guideline 95% Target */}
-                <line x1="0" y1="25" x2="500" y2="25" stroke="#0f172a" strokeDasharray="4 4" strokeWidth="1.2" opacity="0.3" />
-                
-                {/* Gradient Definition */}
                 <defs>
                   <linearGradient id="orangePulseGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#f97316" stopOpacity="0.45" />
-                    <stop offset="100%" stopColor="#f97316" stopOpacity="0.02" />
+                    <stop offset="0%" stopColor="#f97316" stopOpacity="0.4" />
+                    <stop offset="100%" stopColor="#f97316" stopOpacity="0.01" />
                   </linearGradient>
                 </defs>
 
-                {/* Area Fill */}
-                <path
-                  d="M0,70 Q60,30 120,45 T240,35 T360,55 T440,25 T500,40 L500,150 L0,150 Z"
-                  fill="url(#orangePulseGradient)"
+                {/* Horizontal Guideline 95% Target */}
+                <line
+                  x1={padLeft - 10}
+                  y1={y95}
+                  x2={500 - padRight + 10}
+                  y2={y95}
+                  stroke="#0f172a"
+                  strokeDasharray="4 4"
+                  strokeWidth="1.2"
+                  opacity="0.3"
                 />
+                <text x={padLeft} y={Math.max(12, y95 - 4)} fontSize="8.5" fontWeight="700" fill="#64748b">
+                  Target (95.0%)
+                </text>
+
+                {/* Area Fill */}
+                {areaPath && <path d={areaPath} fill="url(#orangePulseGradient)" />}
 
                 {/* Main Stroke Line */}
-                <path
-                  d="M0,70 Q60,30 120,45 T240,35 T360,55 T440,25 T500,40"
-                  fill="none"
-                  stroke="#f97316"
-                  strokeWidth="2.8"
-                />
+                {linePath && (
+                  <path
+                    d={linePath}
+                    fill="none"
+                    stroke="#f97316"
+                    strokeWidth="2.8"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                )}
 
-                {/* Pulse Dots */}
-                <circle cx="120" cy="45" r="4" fill="#ffffff" stroke="#ea580c" strokeWidth="2.5" />
-                <circle cx="240" cy="35" r="4" fill="#ffffff" stroke="#ea580c" strokeWidth="2.5" />
-                <circle cx="360" cy="55" r="4" fill="#ffffff" stroke="#ea580c" strokeWidth="2.5" />
-                <circle cx="440" cy="25" r="5" fill="#f97316" stroke="#ffffff" strokeWidth="2" />
+                {/* Active Point Vertical Guideline */}
+                {activeCoord && (
+                  <line
+                    x1={activeCoord.x}
+                    y1={padTop}
+                    x2={activeCoord.x}
+                    y2={svgHeight - padBottom}
+                    stroke="#f97316"
+                    strokeDasharray="3 3"
+                    strokeWidth="1.2"
+                    opacity="0.6"
+                  />
+                )}
+
+                {/* Dynamic Data Circles */}
+                {coords.map((c, i) => {
+                  const isActive = i === activeIdx;
+                  return (
+                    <g key={c.point.id || i}>
+                      {/* Invisible hover & click target */}
+                      <circle
+                        cx={c.x}
+                        cy={c.y}
+                        r={selectedTimeframe === '1M' ? 10 : 16}
+                        fill="transparent"
+                        className="cursor-pointer"
+                        onMouseEnter={() => setHoveredIndex(i)}
+                        onClick={() => setHoveredIndex(i)}
+                      />
+                      {/* Halo if active */}
+                      {isActive && (
+                        <circle
+                          cx={c.x}
+                          cy={c.y}
+                          r={selectedTimeframe === '1M' ? 6 : 8}
+                          fill="#f97316"
+                          opacity="0.25"
+                        />
+                      )}
+                      {/* Visible point */}
+                      <circle
+                        cx={c.x}
+                        cy={c.y}
+                        r={isActive ? (selectedTimeframe === '1M' ? 4 : 5) : (selectedTimeframe === '1M' ? 2.5 : 3.8)}
+                        fill={isActive ? '#ffffff' : (c.point.rate >= 95 ? '#ffffff' : '#f97316')}
+                        stroke={isActive ? '#ea580c' : (c.point.rate >= 95 ? '#059669' : '#ea580c')}
+                        strokeWidth={isActive ? 2.5 : 2}
+                        className="transition-all pointer-events-none"
+                      />
+                    </g>
+                  );
+                })}
               </svg>
+            </div>
 
-              {/* Active Marker Tooltip overlay */}
-              <div className="absolute top-4 right-14 bg-white/95 backdrop-blur px-2.5 py-1 rounded-lg border border-orange-200 shadow-sm text-center pointer-events-none">
-                <span className="text-[10px] text-slate-400 block font-medium">Thursday Roll Call</span>
-                <span className="text-xs font-black text-orange-600">95.8% Present</span>
+            {/* Dynamic Axis Labels / Interaction Controls */}
+            {selectedTimeframe === '1W' && (
+              <div className="flex items-center justify-between text-[11px] text-slate-500 font-semibold px-2 mt-2.5 overflow-x-auto gap-1">
+                {currentPoints.map((pt, idx) => (
+                  <button
+                    key={pt.id}
+                    onClick={() => setHoveredIndex(idx)}
+                    className={`px-2 py-1 rounded-lg text-center transition-all cursor-pointer ${
+                      activeIdx === idx
+                        ? 'bg-orange-500 text-white font-bold shadow-xs'
+                        : 'text-slate-600 hover:bg-slate-100'
+                    }`}
+                  >
+                    <span className="block text-[10px] leading-tight">{pt.label}</span>
+                    <span className="block text-[11px] font-bold leading-tight">{pt.rate}%</span>
+                  </button>
+                ))}
               </div>
-            </div>
+            )}
 
-            {/* Weekday Axis Labels */}
-            <div className="flex items-center justify-between text-[11px] text-slate-500 font-semibold px-2 mt-2">
-              <span>Mon (96.2%)</span>
-              <span>Tue (95.0%)</span>
-              <span>Wed (94.1%)</span>
-              <span>Thu (95.8%)</span>
-              <span>Fri (92.4%)</span>
-              <span className="text-orange-600 font-bold">Today (94.8%)</span>
-            </div>
+            {selectedTimeframe === '1M' && (
+              <div className="mt-2.5 px-2">
+                <div className="flex items-center justify-between text-[11px] text-slate-500 font-semibold">
+                  <span>Feb 16 (95.3%)</span>
+                  <span>Feb 23 (96.8%)</span>
+                  <span>Mar 02 (95.9%)</span>
+                  <span>Mar 09 (96.2%)</span>
+                  <span className="text-orange-600 font-bold">Today ({currentPoints[currentPoints.length - 1]?.rate || 95.3}%)</span>
+                </div>
+                <div className="flex items-center justify-between gap-1 mt-2 pt-1 border-t border-slate-100 overflow-x-auto">
+                  {currentPoints.map((pt, idx) => (
+                    <button
+                      key={pt.id}
+                      onClick={() => setHoveredIndex(idx)}
+                      onMouseEnter={() => setHoveredIndex(idx)}
+                      title={`${pt.subLabel || pt.label}: ${pt.rate}% (${pt.present} present)`}
+                      className={`w-3.5 h-3.5 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+                        activeIdx === idx
+                          ? 'bg-orange-500 ring-2 ring-orange-200 scale-125'
+                          : pt.rate >= 95
+                          ? 'bg-emerald-300 hover:bg-emerald-500'
+                          : 'bg-orange-300 hover:bg-orange-500'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {selectedTimeframe === '1D' && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-2.5 px-1">
+                {currentPoints.map((pt, idx) => (
+                  <button
+                    key={pt.id}
+                    onClick={() => setHoveredIndex(idx)}
+                    className={`p-2 rounded-lg text-left transition-all border cursor-pointer ${
+                      activeIdx === idx
+                        ? 'bg-orange-50 border-orange-300 ring-1 ring-orange-300'
+                        : 'bg-slate-50 border-slate-200/80 hover:bg-white'
+                    }`}
+                  >
+                    <span className="block text-[10px] font-bold text-slate-400 uppercase">{pt.label}</span>
+                    <div className="flex items-baseline justify-between mt-0.5">
+                      <span className="text-xs font-bold text-slate-900">{pt.subLabel}</span>
+                      <span className={`text-xs font-black ${pt.rate >= 95 ? 'text-emerald-700' : 'text-orange-600'}`}>
+                        {pt.rate}%
+                      </span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Grade Attendance Progress Bars (Matching Screenshot's Peak Hours modules) */}
+          {/* Grade Attendance Progress Bars (Direct link to roll call) */}
           <div className="mt-6 pt-4 border-t border-slate-100">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-slate-800">
-                Grade-by-Grade Attendance Standing
-              </span>
+              <div>
+                <span className="text-xs font-bold text-slate-800">
+                  Grade-by-Grade Attendance Standing
+                </span>
+                <p className="text-[10px] text-slate-400">Click any class to take or update today's roll call</p>
+              </div>
               <div className="flex items-center gap-3 text-[10px] font-semibold text-slate-500">
                 <span className="flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-emerald-500"></span> 95-100%
@@ -359,10 +743,14 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               {analytics.gradeComparison.map((item, idx) => (
                 <div
                   key={idx}
-                  className="p-3 bg-slate-50/80 rounded-xl border border-slate-200/60 flex flex-col justify-between"
+                  onClick={() => onNavigateTab('attendance')}
+                  className="p-3 bg-slate-50/80 hover:bg-orange-50/40 rounded-xl border border-slate-200/60 hover:border-orange-200 transition-all flex flex-col justify-between cursor-pointer group"
+                  title={`Click to open attendance register for ${item.grade}`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900">{item.grade}</span>
+                    <span className="text-xs font-bold text-slate-900 group-hover:text-orange-600 transition-colors">
+                      {item.grade}
+                    </span>
                     <span
                       className={`text-xs font-black ${
                         item.rate >= 95 ? 'text-emerald-700' : 'text-orange-600'
@@ -374,7 +762,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                   {/* Progress Line */}
                   <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-2">
                     <div
-                      style={{ width: `${item.rate}%` }}
+                      style={{ width: `${Math.min(100, Math.max(0, item.rate))}%` }}
                       className={`h-full rounded-full ${
                         item.rate >= 95 ? 'bg-emerald-500' : 'bg-orange-500'
                       }`}

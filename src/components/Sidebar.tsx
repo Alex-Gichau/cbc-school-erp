@@ -50,7 +50,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggleCollapse
 }) => {
   const [topDropdownOpen, setTopDropdownOpen] = useState(false);
-  const [bottomDropdownOpen, setBottomDropdownOpen] = useState(false);
 
   const sections = [
     {
@@ -161,111 +160,81 @@ export const Sidebar: React.FC<SidebarProps> = ({
     .flatMap((sec) => sec.items)
     .filter((item) => item.roles.includes(userRole));
 
+  // Core primary tabs displayed directly on the middle navbar
+  const primaryTabIds: TabType[] = ['dashboard', 'attendance', 'enrolment', 'grading'];
+
+  // 1. Items rendered directly as pills on the middle navbar
+  const navbarItems = allAccessibleItems.filter((item) =>
+    primaryTabIds.includes(item.id)
+  );
+
+  // 2. Simplified secondary items rendered in "More" (strictly NOT repeating what is on the middle navbar)
+  const dropdownItems = allAccessibleItems.filter(
+    (item) => !primaryTabIds.includes(item.id)
+  );
+
+  // Check if current tab is one of the dropdown items
+  const activeDropdownItem = dropdownItems.find((item) => item.id === currentTab);
+  const dropdownHasPendingBadge = dropdownItems.some(
+    (item) => item.badge !== undefined && item.badge > 0
+  );
+
   const handleTabClick = (tabId: TabType) => {
     onSelectTab(tabId);
     setTopDropdownOpen(false);
-    setBottomDropdownOpen(false);
   };
 
-  // Reusable dropdown menu content with categorized items and rounded corners
+  // Simplified dropdown menu content without repeating middle navbar items and without blur
   const renderDropdownContent = () => (
-    <div className="space-y-3 p-1">
-      <div className="flex items-center justify-between px-2 pb-2 border-b border-slate-100">
-        <div>
-          <div className="text-xs font-bold text-slate-900">All Modules & Tools</div>
-          <div className="text-[10px] text-slate-400">PCEA St Andrews Kindergarten</div>
-        </div>
-        <span
-          className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-            userRole === 'admin'
-              ? 'bg-orange-100 text-orange-700 border border-orange-200'
-              : 'bg-slate-100 text-slate-700 border border-slate-200'
-          }`}
-        >
+    <div className="p-1 space-y-1">
+      <div className="px-3 py-1.5 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider border-b border-slate-100 flex items-center justify-between">
+        <span>More Modules</span>
+        <span className="text-[10px] font-medium text-slate-400">
           {userRole === 'admin' ? 'Administrator' : 'Class Teacher'}
         </span>
       </div>
 
-      <div className="space-y-3">
-        {sections.map((sec, secIdx) => {
-          const visibleSecItems = sec.items.filter((item) =>
-            item.roles.includes(userRole)
-          );
-          if (visibleSecItems.length === 0) return null;
+      <div className="py-1 space-y-0.5">
+        {dropdownItems.map((item) => {
+          const Icon = item.icon;
+          const isActive = currentTab === item.id;
 
           return (
-            <div key={secIdx} className="space-y-1">
-              <div className="px-2 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
-                {sec.title}
+            <button
+              key={`dropdown-item-${item.id}`}
+              id={`dropdown-module-${item.id}`}
+              type="button"
+              onClick={() => handleTabClick(item.id)}
+              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-left transition-colors cursor-pointer ${
+                isActive
+                  ? 'bg-orange-500 text-white font-semibold shadow-xs'
+                  : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+              }`}
+            >
+              <div className="flex items-center gap-2.5 min-w-0">
+                <Icon
+                  className={`w-4 h-4 shrink-0 ${
+                    isActive ? 'text-white' : 'text-slate-500'
+                  }`}
+                />
+                <span className="text-xs font-semibold truncate">{item.label}</span>
               </div>
-              <div className="space-y-1">
-                {visibleSecItems.map((item) => {
-                  const Icon = item.icon;
-                  const isActive = currentTab === item.id;
 
-                  return (
-                    <button
-                      key={`dropdown-item-${item.id}`}
-                      id={`dropdown-module-${item.id}`}
-                      type="button"
-                      onClick={() => handleTabClick(item.id)}
-                      className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left transition-all cursor-pointer ${
-                        isActive
-                          ? 'bg-orange-500 text-white font-semibold shadow-xs'
-                          : 'hover:bg-slate-50 text-slate-700 hover:text-slate-900 border border-transparent hover:border-slate-100'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                            isActive
-                              ? 'bg-white/20 text-white'
-                              : 'bg-slate-100 text-slate-600'
-                          }`}
-                        >
-                          <Icon className="w-3.5 h-3.5" />
-                        </div>
-                        <div className="truncate">
-                          <div
-                            className={`text-xs font-bold leading-tight truncate ${
-                              isActive ? 'text-white' : 'text-slate-900'
-                            }`}
-                          >
-                            {item.label}
-                          </div>
-                          <div
-                            className={`text-[10px] truncate ${
-                              isActive ? 'text-orange-100' : 'text-slate-400'
-                            }`}
-                          >
-                            {item.subLabel}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-1.5 shrink-0 ml-2">
-                        {item.badge !== undefined && (
-                          <span
-                            className={`px-1.5 py-0.2 rounded-full text-[9px] font-black ${
-                              isActive
-                                ? 'bg-white text-orange-600'
-                                : 'bg-rose-600 text-white'
-                            }`}
-                          >
-                            {item.badge}
-                          </span>
-                        )}
-                        {isActive ? (
-                          <Check className="w-3.5 h-3.5 text-white" />
-                        ) : (
-                          <ChevronRight className="w-3.5 h-3.5 text-slate-300" />
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
+              <div className="flex items-center gap-2 shrink-0 ml-2">
+                {item.badge !== undefined && (
+                  <span
+                    className={`px-1.5 py-0.2 rounded-full text-[9px] font-black ${
+                      isActive
+                        ? 'bg-white text-orange-600'
+                        : 'bg-rose-600 text-white'
+                    }`}
+                  >
+                    {item.badge}
+                  </span>
+                )}
+                {isActive && <Check className="w-3.5 h-3.5 text-white" />}
               </div>
-            </div>
+            </button>
           );
         })}
       </div>
@@ -276,17 +245,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
     <>
       {/* ========================================================= */}
       {/* 1. MOBILE VIEW: MIDDLE NAVBAR CENTERED TO SCREEN          */}
-      {/* With rounded corners (rounded-2xl) and Dropdown Menu       */}
+      {/* With rounded corners (rounded-2xl) and Simplified Dropdown */}
       {/* ========================================================= */}
-      <div className="md:hidden w-full flex flex-col items-center px-3 pt-2.5 pb-1 shrink-0 bg-slate-50/95 sticky top-16 z-30">
+      <div className="md:hidden w-full flex flex-col items-center px-3 pt-2 pb-1 shrink-0 bg-slate-50 sticky top-16 z-30">
         <nav
           id="mobile-middle-navbar"
           aria-label="Mobile School Navigation"
-          className="relative w-full max-w-md mx-auto bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-sm rounded-2xl p-1.5 flex items-center justify-between gap-1"
+          className="relative w-full max-w-md mx-auto bg-white border border-slate-200 shadow-sm rounded-2xl p-1.5 flex items-center justify-between gap-1"
         >
-          {/* Horizontally scrollable pill tabs with rounded corners */}
+          {/* Horizontally scrollable pill tabs for primary modules with rounded corners */}
           <div className="flex-1 flex items-center gap-1 overflow-x-auto no-scrollbar py-0.5 px-0.5">
-            {allAccessibleItems.map((item) => {
+            {navbarItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentTab === item.id;
 
@@ -299,7 +268,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer ${
                     isActive
                       ? 'bg-orange-500 text-white shadow-sm shadow-orange-500/25'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   }`}
                   aria-current={isActive ? 'page' : undefined}
                 >
@@ -320,48 +289,50 @@ export const Sidebar: React.FC<SidebarProps> = ({
             })}
           </div>
 
-          {/* More Button that opens the Dropdown on Mobile */}
+          {/* More Button that opens the Simplified Dropdown on Mobile */}
           <div className="relative shrink-0">
             <button
               id="mobile-middle-navbar-more-btn"
               type="button"
-              onClick={() => {
-                setTopDropdownOpen(!topDropdownOpen);
-                setBottomDropdownOpen(false);
-              }}
+              onClick={() => setTopDropdownOpen(!topDropdownOpen)}
               className={`px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 cursor-pointer border ${
-                topDropdownOpen
+                topDropdownOpen || activeDropdownItem
                   ? 'bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-500/25'
                   : 'bg-slate-100 hover:bg-orange-50 text-slate-700 hover:text-orange-600 border-slate-200/80'
               }`}
-              title="Open all school modules menu"
-              aria-label="Open all school modules dropdown menu"
+              title="More School Modules"
+              aria-label="Open more school modules dropdown menu"
               aria-expanded={topDropdownOpen}
               aria-haspopup="true"
             >
               <Menu className="w-3.5 h-3.5" />
-              <span>More</span>
+              <span>{activeDropdownItem ? activeDropdownItem.shortLabel : 'More'}</span>
+
+              {dropdownHasPendingBadge && !activeDropdownItem && (
+                <span className="w-2 h-2 rounded-full bg-rose-600 ring-1 ring-white shrink-0" />
+              )}
+
               <ChevronDown
                 className={`w-3 h-3 transition-transform duration-200 ${
-                  topDropdownOpen ? 'rotate-180 text-white' : 'text-slate-400'
+                  topDropdownOpen ? 'rotate-180' : ''
                 }`}
               />
             </button>
 
-            {/* Mobile Navbar Dropdown Menu */}
+            {/* Mobile Navbar Dropdown Menu - No Blur Effects */}
             {topDropdownOpen && (
               <>
-                {/* Click-away backdrop */}
+                {/* Click-away backdrop with NO blur */}
                 <div
-                  className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-[1px]"
+                  className="fixed inset-0 z-40 bg-slate-900/20"
                   onClick={() => setTopDropdownOpen(false)}
                   aria-hidden="true"
                 />
 
-                {/* Dropdown Card with rounded-2xl corners */}
+                {/* Dropdown Card with rounded-2xl corners, solid white background, NO blur */}
                 <div
                   id="mobile-navbar-more-dropdown"
-                  className="absolute right-0 top-full mt-2 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-xl border border-slate-200/90 p-2 z-50 max-h-[75vh] overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-150"
+                  className="absolute right-0 top-full mt-2 w-64 sm:w-72 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-xl border border-slate-200 p-1.5 z-50 max-h-[75vh] overflow-y-auto animate-in fade-in slide-in-from-top-2 duration-150"
                 >
                   {renderDropdownContent()}
                 </div>
@@ -372,113 +343,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* ========================================================= */}
-      {/* 2. MOBILE VIEW: FLOATING BOTTOM-MIDDLE QUICK DOCK NAVBAR  */}
-      {/* Centered with rounded corners (rounded-2xl) & Dropdown     */}
-      {/* ========================================================= */}
-      <div className="md:hidden fixed bottom-3 left-1/2 -translate-x-1/2 z-40 w-auto max-w-[94vw] pointer-events-none">
-        <div className="relative bg-white/95 backdrop-blur-md border border-slate-200/90 shadow-xl shadow-slate-900/10 rounded-2xl p-1.5 flex items-center justify-center gap-1 pointer-events-auto">
-          {allAccessibleItems.slice(0, 4).map((item) => {
-            const Icon = item.icon;
-            const isActive = currentTab === item.id;
-            return (
-              <button
-                key={`dock-${item.id}`}
-                type="button"
-                onClick={() => handleTabClick(item.id)}
-                className={`p-2 rounded-xl text-xs flex flex-col items-center justify-center transition-all cursor-pointer min-w-[50px] ${
-                  isActive
-                    ? 'bg-orange-500 text-white font-bold shadow-xs'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-                }`}
-                title={item.label}
-              >
-                <Icon className="w-4 h-4" />
-                <span className="text-[9px] mt-0.5 leading-none">{item.shortLabel}</span>
-              </button>
-            );
-          })}
-
-          {/* Fifth item: Exam printing if pending, or settings */}
-          {userRole === 'admin' ? (
-            <button
-              type="button"
-              onClick={() => handleTabClick('exams')}
-              className={`p-2 rounded-xl text-xs flex flex-col items-center justify-center transition-all cursor-pointer min-w-[50px] relative ${
-                currentTab === 'exams'
-                  ? 'bg-orange-500 text-white font-bold shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-              }`}
-              title="Exam Print Pipeline"
-            >
-              <Printer className="w-4 h-4" />
-              <span className="text-[9px] mt-0.5 leading-none">Exams</span>
-              {pendingExamsCount > 0 && (
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-rose-600 ring-1 ring-white" />
-              )}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => handleTabClick('grading')}
-              className={`p-2 rounded-xl text-xs flex flex-col items-center justify-center transition-all cursor-pointer min-w-[50px] ${
-                currentTab === 'grading'
-                  ? 'bg-orange-500 text-white font-bold shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-              }`}
-              title="Academic Grading"
-            >
-              <Award className="w-4 h-4" />
-              <span className="text-[9px] mt-0.5 leading-none">Grades</span>
-            </button>
-          )}
-
-          {/* Bottom Dock More button with Upward Dropdown */}
-          <div className="relative">
-            <button
-              id="mobile-dock-more-btn"
-              type="button"
-              onClick={() => {
-                setBottomDropdownOpen(!bottomDropdownOpen);
-                setTopDropdownOpen(false);
-              }}
-              className={`p-2 rounded-xl text-xs flex flex-col items-center justify-center transition-all cursor-pointer min-w-[50px] ${
-                bottomDropdownOpen
-                  ? 'bg-orange-500 text-white font-bold shadow-xs'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
-              }`}
-              title="All Modules Dropdown"
-              aria-expanded={bottomDropdownOpen}
-              aria-haspopup="true"
-            >
-              <Menu className="w-4 h-4" />
-              <span className="text-[9px] mt-0.5 leading-none">More</span>
-            </button>
-
-            {/* Bottom Dock Dropdown (drops upward above dock) */}
-            {bottomDropdownOpen && (
-              <>
-                {/* Click-away backdrop */}
-                <div
-                  className="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-[1px]"
-                  onClick={() => setBottomDropdownOpen(false)}
-                  aria-hidden="true"
-                />
-
-                {/* Upward Dropdown Container with rounded-2xl */}
-                <div
-                  id="mobile-dock-more-dropdown"
-                  className="absolute right-0 bottom-full mb-2.5 w-72 sm:w-80 max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-slate-200/90 p-2 z-50 max-h-[70vh] overflow-y-auto animate-in fade-in slide-in-from-bottom-2 duration-150"
-                >
-                  {renderDropdownContent()}
-                </div>
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* ========================================================= */}
-      {/* 3. DESKTOP VIEW: STANDARD LEFT SIDEBAR                    */}
+      {/* 2. DESKTOP VIEW: STANDARD LEFT SIDEBAR                    */}
       {/* Hidden on mobile (hidden md:flex), active on md+ screens   */}
       {/* ========================================================= */}
       <aside
