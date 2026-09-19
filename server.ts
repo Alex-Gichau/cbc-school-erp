@@ -240,6 +240,37 @@ app.post('/api/fees/payments', (req: Request, res: Response) => {
   res.status(201).json({ payment: newPayment, updatedStudent: student });
 });
 
+app.get('/api/fees/statement/:studentId', (req: Request, res: Response) => {
+  const { studentId } = req.params;
+  const student = studentsStore.find(
+    s => s.id === studentId || s.admissionNumber.toLowerCase() === studentId.toLowerCase()
+  );
+  if (!student) {
+    return res.status(404).json({ error: 'Student not found' });
+  }
+
+  const studentPayments = paymentsStore
+    .filter(
+      p => p.studentId === student.id || p.admissionNumber.toLowerCase() === student.admissionNumber.toLowerCase()
+    )
+    .sort((a, b) => new Date(a.paymentDate).getTime() - new Date(b.paymentDate).getTime());
+
+  res.json({
+    student,
+    payments: studentPayments,
+    summary: {
+      totalBilled: student.totalFeesBilled,
+      totalPaid: student.totalFeesPaid,
+      feeBalance: student.feeBalance,
+      isCleared: student.feeBalance === 0,
+      settlementPercentage:
+        student.totalFeesBilled > 0
+          ? Math.round((student.totalFeesPaid / student.totalFeesBilled) * 100)
+          : 100
+    }
+  });
+});
+
 // Grades & Performance
 app.get('/api/grades', (req: Request, res: Response) => {
   const { grade, subject, term } = req.query;
@@ -466,21 +497,44 @@ app.post('/api/timetable', (req: Request, res: Response) => {
     room: req.body.room
   };
 
-  // Conflict detection: Is teacher or room already scheduled at the same day and period?
+  // Comprehensive Conflict Detection: Validate teacher, room, and grade collisions
+  const cleanRoom = (slot.room || '').trim().toLowerCase();
+  const cleanTeacher = (slot.teacherName || '').trim().toLowerCase();
+  const cleanGrade = (slot.grade || '').trim().toLowerCase();
+
   const conflict = timetableStore.find(
     t =>
       t.dayOfWeek === slot.dayOfWeek &&
       t.periodIndex === slot.periodIndex &&
-      (t.teacherId === slot.teacherId || t.room.toLowerCase() === slot.room.toLowerCase())
+      (
+        (slot.teacherId && t.teacherId === slot.teacherId) ||
+        (cleanTeacher && t.teacherName?.trim().toLowerCase() === cleanTeacher) ||
+        (cleanRoom && t.room?.trim().toLowerCase() === cleanRoom) ||
+        (cleanGrade && t.grade?.trim().toLowerCase() === cleanGrade)
+      )
   );
 
   if (conflict) {
-    const isTeacher = conflict.teacherId === slot.teacherId;
-    return res.status(409).json({
-      error: isTeacher
-        ? `Scheduling Conflict: ${conflict.teacherName} is already assigned to ${conflict.grade} in ${conflict.room} during ${slot.dayOfWeek} ${slot.periodName}.`
-        : `Room Conflict: ${conflict.room} is already booked for ${conflict.subject} (${conflict.grade}) during this period.`
-    });
+    const isTeacher =
+      (slot.teacherId && conflict.teacherId === slot.teacherId) ||
+      (cleanTeacher && conflict.teacherName?.trim().toLowerCase() === cleanTeacher);
+    const isRoom = cleanRoom && conflict.room?.trim().toLowerCase() === cleanRoom;
+    const isGrade = cleanGrade && conflict.grade?.trim().toLowerCase() === cleanGrade;
+
+    let alertMessage = '';
+    if (isTeacher && isRoom) {
+      alertMessage = `Double Conflict Alert: ${conflict.teacherName} and classroom "${conflict.room}" are both already booked for ${conflict.grade} (${conflict.subject}) on ${slot.dayOfWeek} ${slot.periodName || `Period ${slot.periodIndex}`}.`;
+    } else if (isTeacher) {
+      alertMessage = `Teacher Booking Conflict Alert: ${conflict.teacherName} is already booked teaching ${conflict.grade} (${conflict.subject}) in ${conflict.room} during ${slot.dayOfWeek} ${slot.periodName || `Period ${slot.periodIndex}`} (${conflict.startTime || '08:00'} - ${conflict.endTime || '08:45'}).`;
+    } else if (isRoom) {
+      alertMessage = `Classroom Booking Conflict Alert: Classroom "${conflict.room}" is already booked by ${conflict.teacherName} for ${conflict.grade} (${conflict.subject}) during ${slot.dayOfWeek} ${slot.periodName || `Period ${slot.periodIndex}`}.`;
+    } else if (isGrade) {
+      alertMessage = `Class Schedule Conflict Alert: ${conflict.grade} already has a lesson scheduled (${conflict.subject} with ${conflict.teacherName}) during ${slot.dayOfWeek} ${slot.periodName || `Period ${slot.periodIndex}`}.`;
+    } else {
+      alertMessage = `Scheduling collision detected on ${slot.dayOfWeek} Period ${slot.periodIndex}.`;
+    }
+
+    return res.status(409).json({ error: alertMessage });
   }
 
   timetableStore.push(slot);

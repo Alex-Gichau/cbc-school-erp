@@ -11,11 +11,24 @@ import {
   User,
   AlertTriangle,
   CheckCircle,
+  CheckCircle2,
+  ShieldAlert,
+  Building2,
   X,
   Filter
 } from 'lucide-react';
 import { TimetableSlot, UserRole } from '../types';
 import { TimetableCalendarView } from './TimetableCalendarView';
+
+const TEACHER_MAP: Record<string, string> = {
+  'Sarah Jenkins': 'user_teacher_1',
+  'Marcus Vance': 'user_teacher_2',
+  'Dr. Helen Oloo': 'user_teacher_3',
+  'Claire Kamau': 'user_teacher_5',
+  'Coach Eric Simiyu': 'user_teacher_6',
+  'Antony Barasa': 'user_teacher_7',
+  'Jane Wambui': 'user_teacher_8'
+};
 
 interface TimetableManagerProps {
   slots: TimetableSlot[];
@@ -110,26 +123,125 @@ export const TimetableManager: React.FC<TimetableManagerProps> = ({
     }
   });
 
+  // List of standard campus classrooms and specialized facilities
+  const standardRooms = useMemo(() => {
+    const roomSet = new Set<string>();
+    slots.forEach((s) => {
+      if (s.room) roomSet.add(s.room.trim());
+    });
+    [
+      'Room 204 (Science Wing)',
+      'Room 102',
+      'Room 108',
+      'Physics Lab A',
+      'Chemistry Lab B',
+      'Biology Lab 1',
+      'Digital Lab 2',
+      'School Sports Field',
+      'Library Seminar Room',
+      'Art & Music Studio'
+    ].forEach((r) => roomSet.add(r));
+    return Array.from(roomSet).sort();
+  }, [slots]);
+
+  // Real-time booking collision & availability validation
+  const validationStatus = useMemo(() => {
+    const pIndex = Number(formData.periodIndex);
+    const day = formData.dayOfWeek;
+    const cleanRoom = formData.room.trim().toLowerCase();
+    const cleanTeacher = formData.teacherName.trim().toLowerCase();
+    const cleanGrade = formData.grade.trim().toLowerCase();
+
+    // 1. Teacher Booking Conflict Check
+    const teacherConflict = slots.find(
+      (s) =>
+        s.dayOfWeek === day &&
+        s.periodIndex === pIndex &&
+        (s.teacherName.trim().toLowerCase() === cleanTeacher ||
+          (formData.teacherId && s.teacherId === formData.teacherId))
+    );
+
+    // 2. Classroom Booking Conflict Check
+    const roomConflict = cleanRoom
+      ? slots.find(
+          (s) =>
+            s.dayOfWeek === day &&
+            s.periodIndex === pIndex &&
+            (s.room.trim().toLowerCase() === cleanRoom ||
+              s.room.trim().toLowerCase().includes(cleanRoom) ||
+              cleanRoom.includes(s.room.trim().toLowerCase()))
+        )
+      : null;
+
+    // 3. Class / Grade Schedule Conflict Check
+    const gradeConflict = slots.find(
+      (s) =>
+        s.dayOfWeek === day &&
+        s.periodIndex === pIndex &&
+        s.grade.trim().toLowerCase() === cleanGrade
+    );
+
+    // Identify which rooms are currently free during this specific day and period
+    const bookedRoomsThisPeriod = new Set(
+      slots
+        .filter((s) => s.dayOfWeek === day && s.periodIndex === pIndex)
+        .map((s) => s.room.trim().toLowerCase())
+    );
+    const availableRooms = standardRooms.filter(
+      (r) => !bookedRoomsThisPeriod.has(r.toLowerCase())
+    );
+
+    // Identify which periods this specific teacher is completely free on this day
+    const teacherBookedPeriods = new Set(
+      slots
+        .filter(
+          (s) =>
+            s.dayOfWeek === day &&
+            (s.teacherName.trim().toLowerCase() === cleanTeacher ||
+              (formData.teacherId && s.teacherId === formData.teacherId))
+        )
+        .map((s) => s.periodIndex)
+    );
+    const teacherFreePeriods = periodSlots
+      .filter((p) => !p.isBreak && !teacherBookedPeriods.has(p.index))
+      .map((p) => ({ index: p.index, name: p.name, time: p.time }));
+
+    const hasConflict = Boolean(teacherConflict || roomConflict || gradeConflict);
+
+    return {
+      hasConflict,
+      teacherConflict,
+      roomConflict,
+      gradeConflict,
+      availableRooms,
+      teacherFreePeriods
+    };
+  }, [formData, slots, standardRooms, periodSlots]);
+
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setConflictError('');
 
-    // Check conflict locally before sending
-    const conflict = slots.find(
-      (s) =>
-        s.dayOfWeek === formData.dayOfWeek &&
-        s.periodIndex === Number(formData.periodIndex) &&
-        (s.teacherName === formData.teacherName || s.room.toLowerCase() === formData.room.toLowerCase())
-    );
-
-    if (conflict) {
-      if (conflict.teacherName === formData.teacherName) {
+    // Block submission if conflict exists
+    if (validationStatus.hasConflict) {
+      if (validationStatus.teacherConflict && validationStatus.roomConflict) {
         setConflictError(
-          `Teacher Conflict: ${formData.teacherName} is already scheduled for ${conflict.grade} in ${conflict.room} during ${formData.dayOfWeek} Period ${formData.periodIndex}.`
+          `Double Collision Alert: Teacher ${formData.teacherName} and classroom "${formData.room}" are both already booked during ${formData.dayOfWeek} Period ${formData.periodIndex}. Please select an alternate teacher, classroom, or time slot.`
         );
-      } else {
+      } else if (validationStatus.teacherConflict) {
+        const c = validationStatus.teacherConflict;
         setConflictError(
-          `Room Conflict: ${formData.room} is already booked for ${conflict.subject} (${conflict.grade}) during this period.`
+          `Teacher Booking Conflict: ${formData.teacherName} is already booked teaching ${c.grade} (${c.subject}) in ${c.room} on ${formData.dayOfWeek} Period ${formData.periodIndex} (${c.startTime || '08:00'} - ${c.endTime || '08:45'}).`
+        );
+      } else if (validationStatus.roomConflict) {
+        const c = validationStatus.roomConflict;
+        setConflictError(
+          `Classroom Booking Conflict: Classroom "${formData.room}" is already reserved by ${c.teacherName} for ${c.grade} (${c.subject}) on ${formData.dayOfWeek} Period ${formData.periodIndex}.`
+        );
+      } else if (validationStatus.gradeConflict) {
+        const c = validationStatus.gradeConflict;
+        setConflictError(
+          `Class Schedule Collision: ${formData.grade} is already scheduled for ${c.subject} with ${c.teacherName} in ${c.room} on ${formData.dayOfWeek} Period ${formData.periodIndex}.`
         );
       }
       return;
@@ -145,7 +257,7 @@ export const TimetableManager: React.FC<TimetableManagerProps> = ({
         endTime: periodSlots.find((p) => p.index === Number(formData.periodIndex))?.time.split(' - ')[1] || '08:45',
         grade: formData.grade,
         subject: formData.subject,
-        teacherId: formData.teacherId,
+        teacherId: formData.teacherId || TEACHER_MAP[formData.teacherName] || 'user_teacher_1',
         teacherName: formData.teacherName,
         room: formData.room
       };
@@ -153,7 +265,7 @@ export const TimetableManager: React.FC<TimetableManagerProps> = ({
       await onAddSlot(slotData);
       setShowAddModal(false);
     } catch (err: any) {
-      setConflictError(err.message || 'Failed to save timetable slot');
+      setConflictError(err.message || 'Failed to schedule timetable slot due to a booking collision.');
     } finally {
       setIsSubmitting(false);
     }
@@ -508,42 +620,163 @@ export const TimetableManager: React.FC<TimetableManagerProps> = ({
         </div>
       )}
 
-      {/* Schedule Lesson Modal */}
+      {/* Schedule Lesson Modal with Proactive Collision Detection */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in duration-150">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in duration-150 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-4 border-b border-slate-100">
               <div>
-                <h2 className="text-base font-bold text-slate-900 font-serif">
-                  Schedule Lesson Slot
+                <h2 className="text-base font-bold text-slate-900 font-serif flex items-center gap-2">
+                  <span>Schedule Lesson Slot</span>
+                  {validationStatus.hasConflict ? (
+                    <span className="text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200">
+                      Conflict Detected
+                    </span>
+                  ) : (
+                    <span className="text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      Slot Available
+                    </span>
+                  )}
                 </h2>
-                <p className="text-xs text-slate-500">
-                  Assigns a subject, teacher, and room to a weekly period with automatic conflict checking.
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Assigns a subject, teacher, and room to a weekly period with automatic booking validation.
                 </p>
               </div>
               <button
-                onClick={() => setShowAddModal(false)}
-                className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600"
+                onClick={() => {
+                  setShowAddModal(false);
+                  setConflictError('');
+                }}
+                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+                title="Close"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
+            {/* Top Server or Submission Conflict Banner */}
             {conflictError && (
-              <div className="mt-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2">
+              <div className="mt-4 p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs flex items-start gap-2.5">
                 <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                <span>{conflictError}</span>
+                <div className="leading-relaxed">
+                  <span className="font-bold block text-rose-950 mb-0.5">Booking Alert</span>
+                  {conflictError}
+                </div>
+              </div>
+            )}
+
+            {/* Proactive Real-Time Conflict Warning Card */}
+            {validationStatus.hasConflict ? (
+              <div className="mt-4 p-3.5 rounded-2xl bg-rose-50/90 border border-rose-200 text-rose-950 space-y-2.5">
+                <div className="flex items-start gap-2.5">
+                  <div className="p-1.5 rounded-xl bg-rose-200 text-rose-800 shrink-0 mt-0.5">
+                    <ShieldAlert className="w-4 h-4" />
+                  </div>
+                  <div className="space-y-1 text-xs">
+                    <span className="font-bold text-rose-950 flex items-center gap-1.5">
+                      Scheduling Conflict Detected
+                    </span>
+
+                    {validationStatus.teacherConflict && (
+                      <p className="text-[11px] text-rose-800 leading-relaxed">
+                        <strong className="font-semibold text-rose-950">Teacher Already Booked: </strong>
+                        {formData.teacherName} is already assigned to teach{' '}
+                        <span className="font-semibold">{validationStatus.teacherConflict.grade}</span> (
+                        {validationStatus.teacherConflict.subject}) in{' '}
+                        <span className="font-semibold">{validationStatus.teacherConflict.room}</span> on{' '}
+                        {formData.dayOfWeek} Period {formData.periodIndex}.
+                      </p>
+                    )}
+
+                    {validationStatus.roomConflict && (
+                      <p className="text-[11px] text-rose-800 leading-relaxed">
+                        <strong className="font-semibold text-rose-950">Classroom Already Occupied: </strong>
+                        "{formData.room}" is already reserved by{' '}
+                        <span className="font-semibold">{validationStatus.roomConflict.teacherName}</span> for{' '}
+                        {validationStatus.roomConflict.grade} ({validationStatus.roomConflict.subject}) during this period.
+                      </p>
+                    )}
+
+                    {validationStatus.gradeConflict && (
+                      <p className="text-[11px] text-rose-800 leading-relaxed">
+                        <strong className="font-semibold text-rose-950">Class Schedule Collision: </strong>
+                        {formData.grade} already has{' '}
+                        <span className="font-semibold">{validationStatus.gradeConflict.subject}</span> with{' '}
+                        {validationStatus.gradeConflict.teacherName} in{' '}
+                        {validationStatus.gradeConflict.room}.
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Instant Quick-Fix Recommendation Actions */}
+                <div className="pt-2 border-t border-rose-200/80 space-y-2">
+                  {validationStatus.roomConflict && validationStatus.availableRooms.length > 0 && (
+                    <div>
+                      <span className="text-[10px] font-bold text-rose-900 block mb-1">
+                        Alternative Unreserved Rooms for Period {formData.periodIndex}:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {validationStatus.availableRooms.slice(0, 4).map((rm) => (
+                          <button
+                            key={rm}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, room: rm })}
+                            className="px-2 py-0.5 rounded-lg bg-white hover:bg-rose-100 border border-rose-300 text-[10px] font-semibold text-rose-900 transition-colors cursor-pointer shadow-xs"
+                          >
+                            Switch to {rm}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {validationStatus.teacherConflict && validationStatus.teacherFreePeriods.length > 0 && (
+                    <div>
+                      <span className="text-[10px] font-bold text-rose-900 block mb-1">
+                        Free Periods for {formData.teacherName} on {formData.dayOfWeek}:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {validationStatus.teacherFreePeriods.slice(0, 3).map((p) => (
+                          <button
+                            key={p.index}
+                            type="button"
+                            onClick={() => setFormData({ ...formData, periodIndex: p.index })}
+                            className="px-2 py-0.5 rounded-lg bg-white hover:bg-rose-100 border border-rose-300 text-[10px] font-semibold text-rose-900 transition-colors cursor-pointer shadow-xs"
+                          >
+                            Move to {p.name} ({p.time})
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span className="font-semibold text-[11px]">
+                    No Booking Collisions: Teacher and Classroom are both unreserved.
+                  </span>
+                </div>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-900">
+                  Ready to Book
+                </span>
               </div>
             )}
 
             <form onSubmit={handleAddSubmit} className="mt-4 space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-600 mb-1">Day of Week</label>
+                  <label className="block text-slate-600 mb-1 font-medium">Day of Week</label>
                   <select
                     value={formData.dayOfWeek}
-                    onChange={(e) => setFormData({ ...formData, dayOfWeek: e.target.value as any })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white"
+                    onChange={(e) => {
+                      setFormData({ ...formData, dayOfWeek: e.target.value as any });
+                      setConflictError('');
+                    }}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                   >
                     {days.map((d) => (
                       <option key={d} value={d}>
@@ -554,11 +787,14 @@ export const TimetableManager: React.FC<TimetableManagerProps> = ({
                 </div>
 
                 <div>
-                  <label className="block text-slate-600 mb-1">Period Slot</label>
+                  <label className="block text-slate-600 mb-1 font-medium">Period Slot</label>
                   <select
                     value={formData.periodIndex}
-                    onChange={(e) => setFormData({ ...formData, periodIndex: Number(e.target.value) })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-bold"
+                    onChange={(e) => {
+                      setFormData({ ...formData, periodIndex: Number(e.target.value) });
+                      setConflictError('');
+                    }}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-bold focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                   >
                     <option value={1}>Period 1 (08:00 - 08:45)</option>
                     <option value={2}>Period 2 (08:45 - 09:30)</option>
@@ -573,35 +809,65 @@ export const TimetableManager: React.FC<TimetableManagerProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-600 mb-1">Class / Grade</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-slate-600 font-medium">Class / Grade</label>
+                    {validationStatus.gradeConflict ? (
+                      <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200">
+                        Collision
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-medium text-slate-400">
+                        Available
+                      </span>
+                    )}
+                  </div>
                   <select
                     value={formData.grade}
-                    onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-semibold"
+                    onChange={(e) => {
+                      setFormData({ ...formData, grade: e.target.value });
+                      setConflictError('');
+                    }}
+                    className={`w-full px-3 py-2 rounded-xl border bg-white font-semibold transition-colors ${
+                      validationStatus.gradeConflict
+                        ? 'border-rose-300 bg-rose-50/30'
+                        : 'border-slate-300'
+                    }`}
                   >
-                    <option value="Grade 10-A">Grade 10-A</option>
-                    <option value="Grade 11-A">Grade 11-A</option>
-                    <option value="Grade 9-A">Grade 9-A</option>
-                    <option value="Grade 12-A">Grade 12-A</option>
+                    {availableGrades.map((g) => (
+                      <option key={g} value={g}>
+                        {g}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-slate-600 mb-1">Subject</label>
+                  <label className="block text-slate-600 mb-1 font-medium">Subject</label>
                   <input
                     type="text"
                     required
                     value={formData.subject}
                     onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                     placeholder="e.g. Mathematics"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-bold"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-bold focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-slate-600 mb-1">Teacher</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-slate-600 font-medium">Teacher</label>
+                    {validationStatus.teacherConflict ? (
+                      <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200 flex items-center gap-0.5">
+                        <AlertTriangle className="w-2.5 h-2.5" /> Booked
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 flex items-center gap-0.5">
+                        <CheckCircle2 className="w-2.5 h-2.5" /> Free
+                      </span>
+                    )}
+                  </div>
                   <select
                     value={formData.teacherName}
                     onChange={(e) => {
@@ -609,46 +875,142 @@ export const TimetableManager: React.FC<TimetableManagerProps> = ({
                       setFormData({
                         ...formData,
                         teacherName: name,
-                        teacherId: name.includes('Sarah') ? 'user_teacher_1' : 'user_teacher_2'
+                        teacherId: TEACHER_MAP[name] || 'user_teacher_1'
                       });
+                      setConflictError('');
                     }}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white font-medium"
+                    className={`w-full px-3 py-2 rounded-xl border bg-white font-medium transition-colors ${
+                      validationStatus.teacherConflict
+                        ? 'border-rose-400 bg-rose-50/40 text-rose-950 ring-1 ring-rose-400'
+                        : 'border-slate-300'
+                    }`}
                   >
-                    <option value="Sarah Jenkins">Sarah Jenkins</option>
-                    <option value="Marcus Vance">Marcus Vance</option>
-                    <option value="Dr. Helen Oloo">Dr. Helen Oloo</option>
-                    <option value="Claire Kamau">Claire Kamau</option>
-                    <option value="Antony Barasa">Antony Barasa</option>
+                    {availableTeachers.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-slate-600 mb-1">Room / Lab</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-slate-600 font-medium">Room / Lab</label>
+                    {validationStatus.roomConflict ? (
+                      <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200 flex items-center gap-0.5">
+                        <AlertTriangle className="w-2.5 h-2.5" /> Occupied
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200 flex items-center gap-0.5">
+                        <CheckCircle2 className="w-2.5 h-2.5" /> Free
+                      </span>
+                    )}
+                  </div>
                   <input
                     type="text"
                     required
+                    list="standard-rooms-list"
                     value={formData.room}
-                    onChange={(e) => setFormData({ ...formData, room: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, room: e.target.value });
+                      setConflictError('');
+                    }}
                     placeholder="e.g. Room 204 or Physics Lab"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white"
+                    className={`w-full px-3 py-2 rounded-xl border bg-white transition-colors ${
+                      validationStatus.roomConflict
+                        ? 'border-rose-400 bg-rose-50/40 text-rose-950 ring-1 ring-rose-400 font-semibold'
+                        : 'border-slate-300'
+                    }`}
                   />
+                  <datalist id="standard-rooms-list">
+                    {standardRooms.map((rm) => (
+                      <option key={rm} value={rm} />
+                    ))}
+                  </datalist>
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-3">
+              {/* Quick Facility Suggestion Chips */}
+              <div>
+                <div className="flex items-center justify-between text-[11px] text-slate-500 mb-1.5">
+                  <span className="flex items-center gap-1">
+                    <Building2 className="w-3 h-3 text-slate-400" />
+                    <span>Quick Select Room</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    Click to auto-populate
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {standardRooms.slice(0, 6).map((r) => {
+                    const isOccupied = slots.some(
+                      (s) =>
+                        s.dayOfWeek === formData.dayOfWeek &&
+                        s.periodIndex === Number(formData.periodIndex) &&
+                        s.room.toLowerCase().trim() === r.toLowerCase().trim()
+                    );
+                    const isSelected = formData.room.toLowerCase().trim() === r.toLowerCase().trim();
+
+                    return (
+                      <button
+                        key={r}
+                        type="button"
+                        onClick={() => {
+                          setFormData({ ...formData, room: r });
+                          setConflictError('');
+                        }}
+                        className={`px-2 py-1 rounded-lg text-[10px] font-medium border transition-colors cursor-pointer ${
+                          isSelected
+                            ? 'bg-orange-500 text-white border-orange-500'
+                            : isOccupied
+                            ? 'bg-rose-50/80 text-rose-700 border-rose-200 line-through opacity-60'
+                            : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+                        }`}
+                        title={isOccupied ? `Occupied during Period ${formData.periodIndex}` : `Available`}
+                      >
+                        {r.replace(' (Science Wing)', '')}
+                        {isOccupied && ' (Booked)'}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
                 <button
                   type="button"
-                  onClick={() => setShowAddModal(false)}
+                  onClick={() => {
+                    setShowAddModal(false);
+                    setConflictError('');
+                  }}
                   className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={isSubmitting}
-                  className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/20 transition-all cursor-pointer disabled:opacity-50"
+                  disabled={isSubmitting || validationStatus.hasConflict}
+                  className={`px-5 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center gap-1.5 ${
+                    validationStatus.hasConflict
+                      ? 'bg-rose-100 text-rose-700 border border-rose-300 cursor-not-allowed opacity-90'
+                      : 'bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/20 cursor-pointer'
+                  }`}
+                  title={
+                    validationStatus.hasConflict
+                      ? 'Resolve teacher or room conflict before saving'
+                      : 'Save lesson slot'
+                  }
                 >
-                  {isSubmitting ? 'Checking...' : 'Confirm & Schedule'}
+                  {validationStatus.hasConflict ? (
+                    <>
+                      <AlertTriangle className="w-3.5 h-3.5" />
+                      <span>Collision Detected — Resolve to Schedule</span>
+                    </>
+                  ) : isSubmitting ? (
+                    <span>Validating Slot...</span>
+                  ) : (
+                    <span>Confirm & Schedule Lesson</span>
+                  )}
                 </button>
               </div>
             </form>

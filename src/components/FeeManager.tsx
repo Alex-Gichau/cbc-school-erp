@@ -10,9 +10,11 @@ import {
   X,
   Building2,
   DollarSign,
-  AlertCircle
+  AlertCircle,
+  FileText
 } from 'lucide-react';
 import { Student, FeePayment, UserRole } from '../types';
+import { StudentFeeStatementModal } from './StudentFeeStatementModal';
 
 interface FeeManagerProps {
   students: Student[];
@@ -37,6 +39,8 @@ export const FeeManager: React.FC<FeeManagerProps> = ({
   const [statusFilter, setStatusFilter] = useState<'all' | 'cleared' | 'pending'>('all');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<FeePayment | null>(null);
+  const [showStatementModal, setShowStatementModal] = useState(false);
+  const [statementStudentId, setStatementStudentId] = useState<string>('');
 
   // Payment form state
   const [selectedStudentId, setSelectedStudentId] = useState(students[0]?.id || '');
@@ -45,6 +49,11 @@ export const FeeManager: React.FC<FeeManagerProps> = ({
   const [paymentNotes, setPaymentNotes] = useState('Term 1 Tuition installment');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState<'ledger' | 'transactions' | 'structure'>('ledger');
+
+  const handleOpenStatement = (studentId: string) => {
+    setStatementStudentId(studentId);
+    setShowStatementModal(true);
+  };
 
   // Metrics
   const totalBilled = students.reduce((acc, s) => acc + s.totalFeesBilled, 0);
@@ -108,6 +117,14 @@ export const FeeManager: React.FC<FeeManagerProps> = ({
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => handleOpenStatement(filteredStudents[0]?.id || students[0]?.id || '')}
+            className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white hover:bg-slate-50 text-slate-800 font-bold text-xs border border-slate-200 shadow-xs transition-all cursor-pointer"
+            title="Generate official printable PDF-style student fee statement"
+          >
+            <FileText className="w-4 h-4 text-orange-500" />
+            <span>Generate Student Statement</span>
+          </button>
           <button
             onClick={() => setShowPaymentModal(true)}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/15 transition-all cursor-pointer"
@@ -303,15 +320,25 @@ export const FeeManager: React.FC<FeeManagerProps> = ({
                           )}
                         </td>
                         <td className="py-3.5 px-4 text-right">
-                          <button
-                            onClick={() => {
-                              setSelectedStudentId(s.id);
-                              setShowPaymentModal(true);
-                            }}
-                            className="px-2.5 py-1 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold text-xs transition-colors cursor-pointer border border-orange-200/60"
-                          >
-                            + Pay Fee
-                          </button>
+                          <div className="flex items-center justify-end gap-1.5">
+                            <button
+                              onClick={() => handleOpenStatement(s.id)}
+                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold text-xs transition-colors cursor-pointer border border-slate-200"
+                              title={`Generate Statement for ${s.firstName} ${s.lastName}`}
+                            >
+                              <FileText className="w-3.5 h-3.5 text-slate-600" />
+                              <span>Statement</span>
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedStudentId(s.id);
+                                setShowPaymentModal(true);
+                              }}
+                              className="px-2.5 py-1 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold text-xs transition-colors cursor-pointer border border-orange-200/60"
+                            >
+                              + Pay Fee
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -359,13 +386,24 @@ export const FeeManager: React.FC<FeeManagerProps> = ({
                     </td>
                     <td className="py-3.5 px-4 text-slate-500">{p.recordedBy}</td>
                     <td className="py-3.5 px-4 text-right">
-                      <button
-                        onClick={() => setSelectedReceipt(p)}
-                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-xs transition-colors cursor-pointer"
-                      >
-                        <Receipt className="w-3.5 h-3.5 text-slate-500" />
-                        <span>View Slip</span>
-                      </button>
+                      <div className="flex items-center justify-end gap-1.5">
+                        <button
+                          onClick={() => setSelectedReceipt(p)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium text-xs transition-colors cursor-pointer"
+                          title="View Official Receipt Slip"
+                        >
+                          <Receipt className="w-3.5 h-3.5 text-slate-500" />
+                          <span>View Slip</span>
+                        </button>
+                        <button
+                          onClick={() => handleOpenStatement(p.studentId)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-50 hover:bg-orange-100 text-orange-700 font-semibold text-xs transition-colors cursor-pointer border border-orange-200/50"
+                          title="Generate Learner Statement"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-orange-600" />
+                          <span>Statement</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -659,6 +697,19 @@ export const FeeManager: React.FC<FeeManagerProps> = ({
           </div>
         </div>
       )}
+
+      {/* Printable PDF-Style Student Fee Statement Modal */}
+      <StudentFeeStatementModal
+        isOpen={showStatementModal}
+        onClose={() => setShowStatementModal(false)}
+        students={students}
+        payments={payments}
+        initialStudentId={statementStudentId}
+        onRecordPayment={(stId) => {
+          setSelectedStudentId(stId);
+          setShowPaymentModal(true);
+        }}
+      />
     </div>
   );
 };
