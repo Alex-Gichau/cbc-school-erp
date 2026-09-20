@@ -15,7 +15,8 @@ import {
   INITIAL_GRADES,
   INITIAL_TIMETABLE,
   INITIAL_EXAMS,
-  ATTENDANCE_ANALYTICS
+  ATTENDANCE_ANALYTICS,
+  INITIAL_ATTENDANCE_RECORDS
 } from '../data/mockData';
 
 // Safe API caller that queries the Express server with fallback to in-memory state
@@ -26,6 +27,31 @@ export const api = {
       if (res.ok) return await res.json();
     } catch (_) {}
     return DEMO_USERS;
+  },
+
+  async getPayments(params?: {
+    startDate?: string;
+    endDate?: string;
+    grade?: string;
+    paymentMethod?: string;
+    search?: string;
+  }): Promise<FeePayment[]> {
+    try {
+      const query = new URLSearchParams(params as any).toString();
+      const res = await fetch(`/api/fees/payments?${query}`);
+      if (res.ok) return await res.json();
+    } catch (_) {}
+
+    let list = [...INITIAL_PAYMENTS];
+    if (params?.startDate) list = list.filter(p => p.paymentDate >= params.startDate!);
+    if (params?.endDate) list = list.filter(p => p.paymentDate <= params.endDate!);
+    if (params?.grade && params.grade !== 'all') list = list.filter(p => p.grade.toLowerCase() === params.grade!.toLowerCase());
+    if (params?.paymentMethod && params.paymentMethod !== 'all') list = list.filter(p => p.paymentMethod.toLowerCase() === params.paymentMethod!.toLowerCase());
+    if (params?.search) {
+      const q = params.search.toLowerCase();
+      list = list.filter(p => p.studentName.toLowerCase().includes(q) || p.admissionNumber.toLowerCase().includes(q) || p.receiptNumber.toLowerCase().includes(q));
+    }
+    return list;
   },
 
   async getHealth(): Promise<any> {
@@ -163,6 +189,36 @@ export const api = {
       if (res.ok) return await res.json();
     } catch (_) {}
     return ATTENDANCE_ANALYTICS;
+  },
+
+  async getAttendanceRecords(params?: {
+    startDate?: string;
+    endDate?: string;
+    grade?: string;
+    status?: string;
+    search?: string;
+  }): Promise<AttendanceRecord[]> {
+    try {
+      const query = new URLSearchParams(params as any).toString();
+      const res = await fetch(`/api/attendance/records?${query}`);
+      if (res.ok) return await res.json();
+    } catch (_) {}
+
+    let list = [...INITIAL_ATTENDANCE_RECORDS];
+    if (params?.startDate) list = list.filter(r => r.date >= params.startDate!);
+    if (params?.endDate) list = list.filter(r => r.date <= params.endDate!);
+    if (params?.grade && params.grade !== 'all') list = list.filter(r => r.grade.toLowerCase() === params.grade!.toLowerCase());
+    if (params?.status && params.status !== 'all') list = list.filter(r => r.status.toLowerCase() === params.status!.toLowerCase());
+    if (params?.search) {
+      const q = params.search.toLowerCase();
+      list = list.filter(
+        r =>
+          r.studentName.toLowerCase().includes(q) ||
+          r.admissionNumber.toLowerCase().includes(q) ||
+          (r.reason && r.reason.toLowerCase().includes(q))
+      );
+    }
+    return list.sort((a, b) => b.date.localeCompare(a.date));
   },
 
   async recordAttendance(data: {

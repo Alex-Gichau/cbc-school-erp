@@ -638,6 +638,576 @@ export const INITIAL_PAYMENTS: FeePayment[] = [
     academicYear: '2026',
     recordedBy: 'Accounts Office (Bursar)',
     notes: 'Second installment: KES 12,000 balance remaining'
+  },
+  {
+    id: 'pay_115',
+    studentId: 'std_001',
+    studentName: 'Amara Kiprono',
+    admissionNumber: 'ADM-2024-0101',
+    grade: 'Grade 10-A',
+    amount: 15000,
+    paymentDate: '2026-03-02',
+    paymentMethod: 'Bank Transfer',
+    receiptNumber: 'REC-2026-019',
+    term: 'Term 1 - 2026',
+    academicYear: '2026',
+    recordedBy: 'Accounts Office (Bursar)',
+    notes: 'Mid-term fee package top-up'
+  },
+  {
+    id: 'pay_116',
+    studentId: 'std_005',
+    studentName: 'Zainab Hassan',
+    admissionNumber: 'ADM-2024-0105',
+    grade: 'Grade 10-A',
+    amount: 4000,
+    paymentDate: '2026-03-06',
+    paymentMethod: 'Mobile Money',
+    receiptNumber: 'REC-2026-020',
+    term: 'Term 1 - 2026',
+    academicYear: '2026',
+    recordedBy: 'Accounts Office (Bursar)',
+    notes: 'Full clearance of remaining Term 1 tuition arrears'
+  },
+  {
+    id: 'pay_117',
+    studentId: 'std_007',
+    studentName: 'Faith Chebet',
+    admissionNumber: 'ADM-2023-0092',
+    grade: 'Grade 11-A',
+    amount: 10000,
+    paymentDate: '2026-03-10',
+    paymentMethod: 'Mobile Money',
+    receiptNumber: 'REC-2026-021',
+    term: 'Term 1 - 2026',
+    academicYear: '2026',
+    recordedBy: 'Accounts Office (Bursar)',
+    notes: 'Installment towards Senior tuition package'
+  },
+  {
+    id: 'pay_118',
+    studentId: 'std_012',
+    studentName: 'Amina Abdi',
+    admissionNumber: 'ADM-2025-0168',
+    grade: 'Grade 9-B',
+    amount: 5000,
+    paymentDate: '2026-03-13',
+    paymentMethod: 'Cash',
+    receiptNumber: 'REC-2026-022',
+    term: 'Term 1 - 2026',
+    academicYear: '2026',
+    recordedBy: 'Accounts Office (Bursar)',
+    notes: 'Cash clearance of remaining term arrears'
+  },
+  {
+    id: 'pay_119',
+    studentId: 'std_004',
+    studentName: 'Brian Koech',
+    admissionNumber: 'ADM-2024-0104',
+    grade: 'Grade 10-A',
+    amount: 12000,
+    paymentDate: '2026-03-16',
+    paymentMethod: 'Bank Transfer',
+    receiptNumber: 'REC-2026-023',
+    term: 'Term 1 - 2026',
+    academicYear: '2026',
+    recordedBy: 'Accounts Office (Bursar)',
+    notes: 'Second installment tuition wire'
+  }
+];
+
+export const INITIAL_ATTENDANCE_RECORDS: AttendanceRecord[] = [
+  // 2026-03-16 (Monday) - Grade 10-A
+  {
+    id: 'att_20260316_01',
+    date: '2026-03-16',
+    grade: 'Grade 10-A',
+    studentId: 'std_001',
+    studentName: 'Amara Kiprono',
+    admissionNumber: 'ADM-2024-0101',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260316_02',
+    date: '2026-03-16',
+    grade: 'Grade 10-A',
+    studentId: 'std_002',
+    studentName: 'Ethan Mwangi',
+    admissionNumber: 'ADM-2024-0102',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260316_03',
+    date: '2026-03-16',
+    grade: 'Grade 10-A',
+    studentId: 'std_003',
+    studentName: 'Chloe Otieno',
+    admissionNumber: 'ADM-2024-0103',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260316_04',
+    date: '2026-03-16',
+    grade: 'Grade 10-A',
+    studentId: 'std_004',
+    studentName: 'Brian Koech',
+    admissionNumber: 'ADM-2024-0104',
+    status: 'absent',
+    reason: 'Reported illness (viral flu)',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260316_05',
+    date: '2026-03-16',
+    grade: 'Grade 10-A',
+    studentId: 'std_005',
+    studentName: 'Zainab Hassan',
+    admissionNumber: 'ADM-2024-0105',
+    status: 'late',
+    reason: 'Traffic congestion on Valley Road (arrived 08:22)',
+    recordedBy: 'Sarah Jenkins'
+  },
+
+  // 2026-03-16 (Monday) - Grade 9-A
+  {
+    id: 'att_20260316_06',
+    date: '2026-03-16',
+    grade: 'Grade 9-A',
+    studentId: 'std_008',
+    studentName: 'Daniel Ochieng',
+    admissionNumber: 'ADM-2025-0150',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Marcus Vance'
+  },
+  {
+    id: 'att_20260316_07',
+    date: '2026-03-16',
+    grade: 'Grade 9-A',
+    studentId: 'std_009',
+    studentName: 'Nia Wanjiku',
+    admissionNumber: 'ADM-2025-0155',
+    status: 'absent',
+    reason: 'Dental appointment at Nairobi Hospital',
+    recordedBy: 'Marcus Vance'
+  },
+
+  // 2026-03-13 (Friday) - Grade 10-A
+  {
+    id: 'att_20260313_01',
+    date: '2026-03-13',
+    grade: 'Grade 10-A',
+    studentId: 'std_001',
+    studentName: 'Amara Kiprono',
+    admissionNumber: 'ADM-2024-0101',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260313_02',
+    date: '2026-03-13',
+    grade: 'Grade 10-A',
+    studentId: 'std_002',
+    studentName: 'Ethan Mwangi',
+    admissionNumber: 'ADM-2024-0102',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260313_03',
+    date: '2026-03-13',
+    grade: 'Grade 10-A',
+    studentId: 'std_003',
+    studentName: 'Chloe Otieno',
+    admissionNumber: 'ADM-2024-0103',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260313_04',
+    date: '2026-03-13',
+    grade: 'Grade 10-A',
+    studentId: 'std_004',
+    studentName: 'Brian Koech',
+    admissionNumber: 'ADM-2024-0104',
+    status: 'absent',
+    reason: 'Medical checkup',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260313_05',
+    date: '2026-03-13',
+    grade: 'Grade 10-A',
+    studentId: 'std_005',
+    studentName: 'Zainab Hassan',
+    admissionNumber: 'ADM-2024-0105',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+
+  // 2026-03-12 (Thursday) - Grade 11-A & Grade 12-A
+  {
+    id: 'att_20260312_01',
+    date: '2026-03-12',
+    grade: 'Grade 11-A',
+    studentId: 'std_006',
+    studentName: 'Lucas Kimutai',
+    admissionNumber: 'ADM-2023-0088',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260312_02',
+    date: '2026-03-12',
+    grade: 'Grade 11-A',
+    studentId: 'std_007',
+    studentName: 'Faith Chebet',
+    admissionNumber: 'ADM-2023-0092',
+    status: 'excused',
+    reason: 'National Mathematics Olympiad contest representation',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260312_03',
+    date: '2026-03-12',
+    grade: 'Grade 12-A',
+    studentId: 'std_010',
+    studentName: 'Leo Njoroge',
+    admissionNumber: 'ADM-2022-0045',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Dr. Arthur Pendelton'
+  },
+
+  // 2026-03-10 (Tuesday) - Grade 10-A
+  {
+    id: 'att_20260310_01',
+    date: '2026-03-10',
+    grade: 'Grade 10-A',
+    studentId: 'std_001',
+    studentName: 'Amara Kiprono',
+    admissionNumber: 'ADM-2024-0101',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260310_02',
+    date: '2026-03-10',
+    grade: 'Grade 10-A',
+    studentId: 'std_002',
+    studentName: 'Ethan Mwangi',
+    admissionNumber: 'ADM-2024-0102',
+    status: 'late',
+    reason: 'School bus mechanical delay along Ngong Road',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260310_03',
+    date: '2026-03-10',
+    grade: 'Grade 10-A',
+    studentId: 'std_003',
+    studentName: 'Chloe Otieno',
+    admissionNumber: 'ADM-2024-0103',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260310_04',
+    date: '2026-03-10',
+    grade: 'Grade 10-A',
+    studentId: 'std_004',
+    studentName: 'Brian Koech',
+    admissionNumber: 'ADM-2024-0104',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260310_05',
+    date: '2026-03-10',
+    grade: 'Grade 10-A',
+    studentId: 'std_005',
+    studentName: 'Zainab Hassan',
+    admissionNumber: 'ADM-2024-0105',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+
+  // 2026-03-06 (Friday) - Grade 9-B & Grade 10-B
+  {
+    id: 'att_20260306_01',
+    date: '2026-03-06',
+    grade: 'Grade 9-B',
+    studentId: 'std_011',
+    studentName: 'Kelvin Mutua',
+    admissionNumber: 'ADM-2025-0162',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Marcus Vance'
+  },
+  {
+    id: 'att_20260306_02',
+    date: '2026-03-06',
+    grade: 'Grade 9-B',
+    studentId: 'std_012',
+    studentName: 'Amina Abdi',
+    admissionNumber: 'ADM-2025-0168',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Marcus Vance'
+  },
+  {
+    id: 'att_20260306_03',
+    date: '2026-03-06',
+    grade: 'Grade 10-B',
+    studentId: 'std_013',
+    studentName: 'Trevor Kimani',
+    admissionNumber: 'ADM-2024-0112',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Marcus Vance'
+  },
+  {
+    id: 'att_20260306_04',
+    date: '2026-03-06',
+    grade: 'Grade 10-B',
+    studentId: 'std_014',
+    studentName: 'Joy Kerubo',
+    admissionNumber: 'ADM-2024-0118',
+    status: 'excused',
+    reason: 'School music festival choir rehearsal',
+    recordedBy: 'Marcus Vance'
+  },
+
+  // 2026-03-02 (Monday) - Grade 10-A
+  {
+    id: 'att_20260302_01',
+    date: '2026-03-02',
+    grade: 'Grade 10-A',
+    studentId: 'std_001',
+    studentName: 'Amara Kiprono',
+    admissionNumber: 'ADM-2024-0101',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260302_02',
+    date: '2026-03-02',
+    grade: 'Grade 10-A',
+    studentId: 'std_002',
+    studentName: 'Ethan Mwangi',
+    admissionNumber: 'ADM-2024-0102',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260302_03',
+    date: '2026-03-02',
+    grade: 'Grade 10-A',
+    studentId: 'std_003',
+    studentName: 'Chloe Otieno',
+    admissionNumber: 'ADM-2024-0103',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260302_04',
+    date: '2026-03-02',
+    grade: 'Grade 10-A',
+    studentId: 'std_004',
+    studentName: 'Brian Koech',
+    admissionNumber: 'ADM-2024-0104',
+    status: 'absent',
+    reason: 'Fever and cold',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260302_05',
+    date: '2026-03-02',
+    grade: 'Grade 10-A',
+    studentId: 'std_005',
+    studentName: 'Zainab Hassan',
+    admissionNumber: 'ADM-2024-0105',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+
+  // 2026-02-27 (Friday) - Grade 10-A & Grade 9-A
+  {
+    id: 'att_20260227_01',
+    date: '2026-02-27',
+    grade: 'Grade 10-A',
+    studentId: 'std_001',
+    studentName: 'Amara Kiprono',
+    admissionNumber: 'ADM-2024-0101',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260227_02',
+    date: '2026-02-27',
+    grade: 'Grade 10-A',
+    studentId: 'std_002',
+    studentName: 'Ethan Mwangi',
+    admissionNumber: 'ADM-2024-0102',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260227_03',
+    date: '2026-02-27',
+    grade: 'Grade 10-A',
+    studentId: 'std_004',
+    studentName: 'Brian Koech',
+    admissionNumber: 'ADM-2024-0104',
+    status: 'absent',
+    reason: 'Family event out of town',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260227_04',
+    date: '2026-02-27',
+    grade: 'Grade 9-A',
+    studentId: 'std_008',
+    studentName: 'Daniel Ochieng',
+    admissionNumber: 'ADM-2025-0150',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Marcus Vance'
+  },
+  {
+    id: 'att_20260227_05',
+    date: '2026-02-27',
+    grade: 'Grade 9-A',
+    studentId: 'std_009',
+    studentName: 'Nia Wanjiku',
+    admissionNumber: 'ADM-2025-0155',
+    status: 'late',
+    reason: 'Rainstorm transit disruption',
+    recordedBy: 'Marcus Vance'
+  },
+
+  // 2026-02-20 (Friday) - Grade 10-A
+  {
+    id: 'att_20260220_01',
+    date: '2026-02-20',
+    grade: 'Grade 10-A',
+    studentId: 'std_001',
+    studentName: 'Amara Kiprono',
+    admissionNumber: 'ADM-2024-0101',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260220_02',
+    date: '2026-02-20',
+    grade: 'Grade 10-A',
+    studentId: 'std_003',
+    studentName: 'Chloe Otieno',
+    admissionNumber: 'ADM-2024-0103',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260220_03',
+    date: '2026-02-20',
+    grade: 'Grade 10-A',
+    studentId: 'std_004',
+    studentName: 'Brian Koech',
+    admissionNumber: 'ADM-2024-0104',
+    status: 'late',
+    reason: 'Overslept; parent signed excuse slip',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260220_04',
+    date: '2026-02-20',
+    grade: 'Grade 10-A',
+    studentId: 'std_005',
+    studentName: 'Zainab Hassan',
+    admissionNumber: 'ADM-2024-0105',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+
+  // 2026-02-16 (Monday) - Grade 10-A & Grade 11-A
+  {
+    id: 'att_20260216_01',
+    date: '2026-02-16',
+    grade: 'Grade 10-A',
+    studentId: 'std_001',
+    studentName: 'Amara Kiprono',
+    admissionNumber: 'ADM-2024-0101',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260216_02',
+    date: '2026-02-16',
+    grade: 'Grade 10-A',
+    studentId: 'std_002',
+    studentName: 'Ethan Mwangi',
+    admissionNumber: 'ADM-2024-0102',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260216_03',
+    date: '2026-02-16',
+    grade: 'Grade 10-A',
+    studentId: 'std_004',
+    studentName: 'Brian Koech',
+    admissionNumber: 'ADM-2024-0104',
+    status: 'absent',
+    reason: 'Asthma flareup',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260216_04',
+    date: '2026-02-16',
+    grade: 'Grade 11-A',
+    studentId: 'std_006',
+    studentName: 'Lucas Kimutai',
+    admissionNumber: 'ADM-2023-0088',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
+  },
+  {
+    id: 'att_20260216_05',
+    date: '2026-02-16',
+    grade: 'Grade 11-A',
+    studentId: 'std_007',
+    studentName: 'Faith Chebet',
+    admissionNumber: 'ADM-2023-0092',
+    status: 'present',
+    reason: '',
+    recordedBy: 'Sarah Jenkins'
   }
 ];
 

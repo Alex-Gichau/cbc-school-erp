@@ -23,6 +23,7 @@ import {
   FeePayment,
   GradeRecord,
   AttendanceAnalytics,
+  AttendanceRecord,
   TimetableSlot,
   ExamPaper,
   UserRole,
@@ -37,7 +38,8 @@ import {
   INITIAL_GRADES,
   INITIAL_TIMETABLE,
   INITIAL_EXAMS,
-  ATTENDANCE_ANALYTICS
+  ATTENDANCE_ANALYTICS,
+  INITIAL_ATTENDANCE_RECORDS
 } from './data/mockData';
 import { CheckCircle2 } from 'lucide-react';
 
@@ -61,6 +63,7 @@ export default function App() {
   const [analytics, setAnalytics] = useState<AttendanceAnalytics>(ATTENDANCE_ANALYTICS);
   const [timetableSlots, setTimetableSlots] = useState<TimetableSlot[]>(INITIAL_TIMETABLE);
   const [exams, setExams] = useState<ExamPaper[]>(INITIAL_EXAMS);
+  const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(INITIAL_ATTENDANCE_RECORDS);
 
   // Collapsible Sidebar State with localStorage persistence
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
@@ -124,7 +127,8 @@ export default function App() {
           fetchedGrades,
           fetchedAnalytics,
           fetchedTimetable,
-          fetchedExams
+          fetchedExams,
+          fetchedAttendanceRecords
         ] = await Promise.all([
           api.getUsers().catch(() => DEMO_USERS),
           api.getHealth().catch(() => ({ database: { connected: true, provider: 'High-Speed Database' } })),
@@ -133,7 +137,8 @@ export default function App() {
           api.getGrades().catch(() => INITIAL_GRADES),
           api.getAttendanceAnalytics().catch(() => ATTENDANCE_ANALYTICS),
           api.getTimetable().catch(() => INITIAL_TIMETABLE),
-          api.getExams().catch(() => INITIAL_EXAMS)
+          api.getExams().catch(() => INITIAL_EXAMS),
+          api.getAttendanceRecords().catch(() => INITIAL_ATTENDANCE_RECORDS)
         ]);
 
         if (fetchedUsers && fetchedUsers.length > 0) setUsers(fetchedUsers);
@@ -144,6 +149,9 @@ export default function App() {
         if (fetchedAnalytics) setAnalytics(fetchedAnalytics);
         if (fetchedTimetable && fetchedTimetable.length > 0) setTimetableSlots(fetchedTimetable);
         if (fetchedExams && fetchedExams.length > 0) setExams(fetchedExams);
+        if (fetchedAttendanceRecords && fetchedAttendanceRecords.length > 0) {
+          setAttendanceRecords(fetchedAttendanceRecords);
+        }
       } catch (err) {
         console.error('Data bootstrap error:', err);
       }
@@ -346,6 +354,26 @@ export default function App() {
         });
       }
 
+      // Also update local attendanceRecords store for immediate historical logs reflection
+      const newAttendanceLogs: AttendanceRecord[] = data.records.map((r, idx) => ({
+        id: `att_${Date.now()}_${idx}`,
+        date: data.date,
+        grade: data.grade,
+        studentId: r.studentId,
+        studentName: r.studentName,
+        admissionNumber: r.admissionNumber,
+        status: r.status,
+        reason: r.reason || '',
+        recordedBy: data.recordedBy
+      }));
+
+      setAttendanceRecords((prev) => {
+        const filtered = prev.filter(
+          (existing) => !(existing.date === data.date && existing.grade.toLowerCase() === data.grade.toLowerCase())
+        );
+        return [...newAttendanceLogs, ...filtered];
+      });
+
       showToast(`Attendance recorded for ${data.grade} (${gradeRate}% present). School-wide trends updated.`);
     } catch (err: any) {
       showToast(`Error saving attendance: ${err.message}`);
@@ -473,6 +501,7 @@ export default function App() {
             {activeTab === 'attendance' && (
               <AttendanceTracker
                 students={students}
+                attendanceRecords={attendanceRecords}
                 onRecordAttendance={handleRecordAttendance}
                 userRole={currentUser.role}
                 currentUserName={currentUser.name}

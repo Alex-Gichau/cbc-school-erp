@@ -12,7 +12,8 @@ import {
   INITIAL_GRADES,
   INITIAL_TIMETABLE,
   INITIAL_EXAMS,
-  ATTENDANCE_ANALYTICS
+  ATTENDANCE_ANALYTICS,
+  INITIAL_ATTENDANCE_RECORDS
 } from './src/data/mockData';
 import {
   Student,
@@ -37,7 +38,7 @@ let paymentsStore: FeePayment[] = [...INITIAL_PAYMENTS];
 let gradesStore: GradeRecord[] = [...INITIAL_GRADES];
 let timetableStore: TimetableSlot[] = [...INITIAL_TIMETABLE];
 let examsStore: ExamPaper[] = [...INITIAL_EXAMS];
-let attendanceRecordsStore: AttendanceRecord[] = [];
+let attendanceRecordsStore: AttendanceRecord[] = [...INITIAL_ATTENDANCE_RECORDS];
 let attendanceAnalyticsStore: AttendanceAnalytics = { ...ATTENDANCE_ANALYTICS };
 
 // MongoDB integration variables
@@ -180,7 +181,32 @@ app.put('/api/students/:id', (req: Request, res: Response) => {
 
 // Fees Management
 app.get('/api/fees/payments', (req: Request, res: Response) => {
-  res.json(paymentsStore);
+  const { startDate, endDate, grade, paymentMethod, search } = req.query;
+  let results = [...paymentsStore];
+
+  if (startDate && typeof startDate === 'string') {
+    results = results.filter(p => p.paymentDate >= startDate);
+  }
+  if (endDate && typeof endDate === 'string') {
+    results = results.filter(p => p.paymentDate <= endDate);
+  }
+  if (grade && typeof grade === 'string' && grade !== 'all') {
+    results = results.filter(p => p.grade.toLowerCase() === grade.toLowerCase());
+  }
+  if (paymentMethod && typeof paymentMethod === 'string' && paymentMethod !== 'all') {
+    results = results.filter(p => p.paymentMethod.toLowerCase() === paymentMethod.toLowerCase());
+  }
+  if (search && typeof search === 'string') {
+    const q = search.toLowerCase();
+    results = results.filter(
+      p =>
+        p.studentName.toLowerCase().includes(q) ||
+        p.admissionNumber.toLowerCase().includes(q) ||
+        p.receiptNumber.toLowerCase().includes(q)
+    );
+  }
+
+  res.json(results);
 });
 
 app.get('/api/fees/summary', (req: Request, res: Response) => {
@@ -351,6 +377,39 @@ app.post('/api/grades/batch', (req: Request, res: Response) => {
 });
 
 // Attendance & Analytics
+app.get('/api/attendance/records', (req: Request, res: Response) => {
+  const { startDate, endDate, grade, status, search } = req.query;
+  let results = [...attendanceRecordsStore];
+
+  if (startDate && typeof startDate === 'string') {
+    results = results.filter(r => r.date >= startDate);
+  }
+  if (endDate && typeof endDate === 'string') {
+    results = results.filter(r => r.date <= endDate);
+  }
+  if (grade && typeof grade === 'string' && grade !== 'all') {
+    results = results.filter(r => r.grade.toLowerCase() === grade.toLowerCase());
+  }
+  if (status && typeof status === 'string' && status !== 'all') {
+    results = results.filter(r => r.status.toLowerCase() === status.toLowerCase());
+  }
+  if (search && typeof search === 'string') {
+    const q = search.toLowerCase();
+    results = results.filter(
+      r =>
+        r.studentName.toLowerCase().includes(q) ||
+        r.admissionNumber.toLowerCase().includes(q) ||
+        (r.reason && r.reason.toLowerCase().includes(q)) ||
+        (r.recordedBy && r.recordedBy.toLowerCase().includes(q))
+    );
+  }
+
+  // Sort descending by date, then studentName
+  results.sort((a, b) => b.date.localeCompare(a.date) || a.studentName.localeCompare(b.studentName));
+
+  res.json(results);
+});
+
 app.get('/api/attendance/analytics', (req: Request, res: Response) => {
   res.json(attendanceAnalyticsStore);
 });
