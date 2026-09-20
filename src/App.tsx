@@ -415,7 +415,7 @@ export default function App() {
           <div className="w-full max-w-7xl xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto space-y-6">
             {/* Action Toast Feedback */}
             {toastMessage && (
-              <div className="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-3 duration-200">
+              <div className="fixed bottom-24 right-7 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-3 duration-200">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span>{toastMessage}</span>
               </div>
@@ -426,11 +426,15 @@ export default function App() {
               <DashboardOverview
                 analytics={analytics}
                 students={students}
+                payments={payments}
                 feeSummary={feeSummary}
                 pendingExamsCount={pendingExamsCount}
                 userRole={currentUser.role}
+                currentUserName={currentUser.name}
                 onNavigateTab={(tab) => setActiveTab(tab)}
                 onOpenNewStudentModal={() => setActiveTab('enrolment')}
+                onAddStudent={handleAddStudent}
+                onRecordPayment={handleRecordPayment}
               />
             )}
 

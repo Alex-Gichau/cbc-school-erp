@@ -22,17 +22,28 @@ import {
   ChevronRight,
   Target
 } from 'lucide-react';
-import { AttendanceAnalytics, Student, UserRole } from '../types';
+import { AttendanceAnalytics, Student, UserRole, FeePayment } from '../types';
 import { TabType } from './Sidebar';
+import { QuickActionsFloatingMenu } from './QuickActionsFloatingMenu';
 
 interface DashboardOverviewProps {
   analytics: AttendanceAnalytics;
   students: Student[];
+  payments?: FeePayment[];
   feeSummary: { totalBilled: number; totalCollected: number; totalOutstanding: number; collectionRate: number };
   pendingExamsCount: number;
   userRole: UserRole;
+  currentUserName?: string;
   onNavigateTab: (tab: TabType) => void;
   onOpenNewStudentModal: () => void;
+  onAddStudent?: (student: Partial<Student>) => Promise<void>;
+  onRecordPayment?: (data: {
+    studentId: string;
+    amount: number;
+    paymentMethod: string;
+    notes?: string;
+    recordedBy: string;
+  }) => Promise<void>;
 }
 
 interface TrendPoint {
@@ -49,11 +60,15 @@ interface TrendPoint {
 export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
   analytics,
   students,
+  payments = [],
   feeSummary,
   pendingExamsCount,
   userRole,
+  currentUserName = 'Arthur Pendelton',
   onNavigateTab,
-  onOpenNewStudentModal
+  onOpenNewStudentModal,
+  onAddStudent,
+  onRecordPayment
 }) => {
   const [selectedTimeframe, setSelectedTimeframe] = useState<'1D' | '1W' | '1M'>('1W');
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
@@ -912,6 +927,17 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Floating Action Speed Dial for Common School Tasks */}
+      <QuickActionsFloatingMenu
+        students={students}
+        payments={payments}
+        currentUserName={currentUserName}
+        userRole={userRole}
+        onNavigateTab={onNavigateTab}
+        onAddStudent={onAddStudent || (async () => { onOpenNewStudentModal(); })}
+        onRecordPayment={onRecordPayment || (async () => { onNavigateTab('fees'); })}
+      />
     </div>
   );
 };
