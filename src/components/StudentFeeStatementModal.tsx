@@ -468,10 +468,10 @@ Or Bank: Absa Bank Kenya, A/C: 01020-948210-00`;
                   </div>
                   <div>
                     <h1 className="text-xl sm:text-2xl font-black text-slate-900 font-serif tracking-tight">
-                      PCEA ST. ANDREWS ACADEMY
+                      PCEA ST. ANDREWS KINDERGARTEN
                     </h1>
                     <p className="text-[11px] font-medium text-slate-600 italic">
-                      Kindergarten, Preparatory & Senior High School Campus
+                      Kindergarten School | Student Statement
                     </p>
                     <p className="text-[10px] text-slate-500 mt-0.5">
                       State House Road • P.O. Box 41298 - 00100, Nairobi, Kenya • Tel: +254 (020) 272-3505
