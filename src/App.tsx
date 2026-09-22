@@ -278,11 +278,10 @@ export default function App() {
       const res = await api.recordAttendance(data);
 
       const presentCount = data.records.filter((r) => r.status === 'present').length;
-      const lateCount = data.records.filter((r) => r.status === 'late').length;
       const absentCount = data.records.filter((r) => r.status === 'absent').length;
       const excusedCount = data.records.filter((r) => r.status === 'excused').length;
       const totalMarked = data.records.length;
-      const gradeRate = totalMarked > 0 ? Math.round(((presentCount + lateCount) / totalMarked) * 1000) / 10 : 100;
+      const gradeRate = totalMarked > 0 ? Math.round((presentCount / totalMarked) * 1000) / 10 : 100;
 
       if (res?.analytics) {
         setAnalytics(res.analytics);
@@ -346,7 +345,6 @@ export default function App() {
             overallRate,
             presentToday: totalPresent,
             absentToday: totalAbsent,
-            lateToday: lateCount,
             excusedToday: excusedCount,
             gradeComparison: newGradeComp,
             dailyTrends: newDailyTrends

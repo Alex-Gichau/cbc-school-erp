@@ -190,7 +190,7 @@ export const SystemSpecificationViewer: React.FC = () => {
               <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-200">
                 <span className="font-bold text-emerald-900 block">Morning Check-In</span>
                 <p className="text-emerald-700 mt-1">
-                  Class teachers mark Present, Absent, Late, or Excused in seconds using a single-tap interface.
+                  Class teachers mark Present, Excused, or Absent in seconds using a single-tap interface.
                 </p>
               </div>
               <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-200">

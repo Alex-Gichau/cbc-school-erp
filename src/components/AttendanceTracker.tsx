@@ -154,10 +154,9 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
   // Roll call counters
   const totalRollCall = classStudents.length;
   const rollCallPresent = classStudents.filter((s) => attendanceMap[s.id]?.status === 'present').length;
-  const rollCallAbsent = classStudents.filter((s) => attendanceMap[s.id]?.status === 'absent').length;
-  const rollCallLate = classStudents.filter((s) => attendanceMap[s.id]?.status === 'late').length;
   const rollCallExcused = classStudents.filter((s) => attendanceMap[s.id]?.status === 'excused').length;
-  const rollCallRate = totalRollCall > 0 ? Math.round(((rollCallPresent + rollCallLate) / totalRollCall) * 100) : 100;
+  const rollCallAbsent = classStudents.filter((s) => attendanceMap[s.id]?.status === 'absent').length;
+  const rollCallRate = totalRollCall > 0 ? Math.round((rollCallPresent / totalRollCall) * 100) : 100;
 
   // -------------------------------------------------------------
   // Historical Records Filtering Logic
@@ -197,10 +196,9 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
   // Historical Analytics within Selected Date Range
   const histTotal = filteredHistoricalRecords.length;
   const histPresent = filteredHistoricalRecords.filter((r) => r.status === 'present').length;
-  const histAbsent = filteredHistoricalRecords.filter((r) => r.status === 'absent').length;
-  const histLate = filteredHistoricalRecords.filter((r) => r.status === 'late').length;
   const histExcused = filteredHistoricalRecords.filter((r) => r.status === 'excused').length;
-  const histRate = histTotal > 0 ? Math.round(((histPresent + histLate) / histTotal) * 100) : 0;
+  const histAbsent = filteredHistoricalRecords.filter((r) => r.status === 'absent').length;
+  const histRate = histTotal > 0 ? Math.round((histPresent / histTotal) * 100) : 0;
 
   // CSV Export for filtered historical records
   const handleExportCSV = () => {
@@ -378,14 +376,11 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
               <div className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 font-bold border border-emerald-200">
                 {rollCallPresent} Present
               </div>
-              <div className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 font-bold border border-rose-200">
-                {rollCallAbsent} Absent
-              </div>
-              <div className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 font-bold border border-amber-200">
-                {rollCallLate} Late
-              </div>
               <div className="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-800 font-bold border border-blue-200">
                 {rollCallExcused} Excused
+              </div>
+              <div className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 font-bold border border-rose-200">
+                {rollCallAbsent} Absent
               </div>
               <div className="px-3 py-1 rounded-lg bg-slate-900 text-white font-black">
                 Rate: {rollCallRate}%
@@ -420,7 +415,7 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
                     <th className="py-3 px-4 w-28 md:w-32">Adm No.</th>
                     <th className="py-3 px-4 md:w-44 lg:w-56">Learner Name</th>
                     <th className="py-3 px-4 text-center md:w-72 lg:w-80">Status Selection</th>
-                    <th className="py-3 px-4">Reason / Notes (If Absent or Late)</th>
+                    <th className="py-3 px-4">Reason / Notes (If Excused or Absent)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -439,7 +434,7 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
                           <div className="flex items-center justify-center gap-1.5">
                             <button
                               onClick={() => handleStatusChange(s.id, 'present')}
-                              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                                 item.status === 'present'
                                   ? 'bg-emerald-600 text-white shadow-xs'
                                   : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
@@ -448,34 +443,24 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
                               Present
                             </button>
                             <button
-                              onClick={() => handleStatusChange(s.id, 'absent')}
-                              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                                item.status === 'absent'
-                                  ? 'bg-rose-600 text-white shadow-xs'
-                                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
-                              }`}
-                            >
-                              Absent
-                            </button>
-                            <button
-                              onClick={() => handleStatusChange(s.id, 'late')}
-                              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                                item.status === 'late'
-                                  ? 'bg-amber-500 text-white shadow-xs'
-                                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
-                              }`}
-                            >
-                              Late
-                            </button>
-                            <button
                               onClick={() => handleStatusChange(s.id, 'excused')}
-                              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                                 item.status === 'excused'
                                   ? 'bg-blue-600 text-white shadow-xs'
                                   : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
                               }`}
                             >
                               Excused
+                            </button>
+                            <button
+                              onClick={() => handleStatusChange(s.id, 'absent')}
+                              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                                item.status === 'absent'
+                                  ? 'bg-rose-600 text-white shadow-xs'
+                                  : 'bg-slate-100 hover:bg-slate-200 text-slate-600'
+                              }`}
+                            >
+                              Absent
                             </button>
                           </div>
                         </td>
@@ -565,9 +550,8 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
                 >
                   <option value="all">All Statuses</option>
                   <option value="present">Present Only</option>
-                  <option value="absent">Absent Only</option>
-                  <option value="late">Late Only</option>
                   <option value="excused">Excused Only</option>
+                  <option value="absent">Absent Only</option>
                 </select>
               </div>
             </div>
@@ -596,7 +580,7 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
           </div>
 
           {/* Time Frame Analytics KPI Banner */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                 Total Logs
@@ -629,32 +613,22 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
             </div>
 
             <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
-              <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wider">
-                Absent
-              </span>
-              <div className="text-xl font-black text-rose-700 mt-1">{histAbsent}</div>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                {histTotal > 0 ? Math.round((histAbsent / histTotal) * 100) : 0}% of period
-              </p>
-            </div>
-
-            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
-              <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider">
-                Late Arrival
-              </span>
-              <div className="text-xl font-black text-amber-700 mt-1">{histLate}</div>
-              <p className="text-[11px] text-slate-500 mt-0.5">
-                {histTotal > 0 ? Math.round((histLate / histTotal) * 100) : 0}% of period
-              </p>
-            </div>
-
-            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
               <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">
                 Excused
               </span>
               <div className="text-xl font-black text-blue-700 mt-1">{histExcused}</div>
               <p className="text-[11px] text-slate-500 mt-0.5">
                 {histTotal > 0 ? Math.round((histExcused / histTotal) * 100) : 0}% of period
+              </p>
+            </div>
+
+            <div className="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-xs">
+              <span className="text-[10px] font-bold text-rose-600 uppercase tracking-wider">
+                Absent
+              </span>
+              <div className="text-xl font-black text-rose-700 mt-1">{histAbsent}</div>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                {histTotal > 0 ? Math.round((histAbsent / histTotal) * 100) : 0}% of period
               </p>
             </div>
           </div>
@@ -723,22 +697,16 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
                                 Present
                               </span>
                             )}
-                            {r.status === 'absent' && (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                                Absent
-                              </span>
-                            )}
-                            {r.status === 'late' && (
-                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
-                                Late
-                              </span>
-                            )}
                             {r.status === 'excused' && (
                               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
                                 <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                                 Excused
+                              </span>
+                            )}
+                            {r.status === 'absent' && (
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                                Absent
                               </span>
                             )}
                           </td>

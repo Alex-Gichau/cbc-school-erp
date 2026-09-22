@@ -201,7 +201,7 @@ const PERMISSIONS_DATA: FeaturePermission[] = [
     category: 'attendance',
     categoryLabel: 'Attendance & Roll Call',
     name: 'Take Daily Morning Classroom Roll Call',
-    description: 'Mark students as Present, Absent, Late, or Excused with daily timestamps and absence notes.',
+    description: 'Mark students as Present, Excused, or Absent with daily timestamps and absence notes.',
     adminAccess: 'full',
     teacherAccess: 'full',
     adminCapabilities: ['Any Class Register', 'Headmaster Oversight'],

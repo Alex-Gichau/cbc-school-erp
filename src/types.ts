@@ -94,7 +94,7 @@ export interface GradeRecord {
   updatedAt: string;
 }
 
-export type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
+export type AttendanceStatus = 'present' | 'absent' | 'excused';
 
 export interface AttendanceRecord {
   id: string;
@@ -155,7 +155,7 @@ export interface AttendanceAnalytics {
   totalStudents: number;
   presentToday: number;
   absentToday: number;
-  lateToday: number;
+  lateToday?: number;
   excusedToday: number;
   dailyTrends: {
     date: string;

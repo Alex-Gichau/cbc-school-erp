@@ -769,7 +769,7 @@ export const INITIAL_ATTENDANCE_RECORDS: AttendanceRecord[] = [
     studentId: 'std_005',
     studentName: 'Zainab Hassan',
     admissionNumber: 'ADM-2024-0105',
-    status: 'late',
+    status: 'excused',
     reason: 'Traffic congestion on Valley Road (arrived 08:22)',
     recordedBy: 'Sarah Jenkins'
   },
@@ -909,7 +909,7 @@ export const INITIAL_ATTENDANCE_RECORDS: AttendanceRecord[] = [
     studentId: 'std_002',
     studentName: 'Ethan Mwangi',
     admissionNumber: 'ADM-2024-0102',
-    status: 'late',
+    status: 'excused',
     reason: 'School bus mechanical delay along Ngong Road',
     recordedBy: 'Sarah Jenkins'
   },
@@ -1102,7 +1102,7 @@ export const INITIAL_ATTENDANCE_RECORDS: AttendanceRecord[] = [
     studentId: 'std_009',
     studentName: 'Nia Wanjiku',
     admissionNumber: 'ADM-2025-0155',
-    status: 'late',
+    status: 'excused',
     reason: 'Rainstorm transit disruption',
     recordedBy: 'Marcus Vance'
   },
@@ -1137,7 +1137,7 @@ export const INITIAL_ATTENDANCE_RECORDS: AttendanceRecord[] = [
     studentId: 'std_004',
     studentName: 'Brian Koech',
     admissionNumber: 'ADM-2024-0104',
-    status: 'late',
+    status: 'excused',
     reason: 'Overslept; parent signed excuse slip',
     recordedBy: 'Sarah Jenkins'
   },
@@ -1862,8 +1862,7 @@ export const ATTENDANCE_ANALYTICS: AttendanceAnalytics = {
   totalStudents: 340,
   presentToday: 322,
   absentToday: 18,
-  lateToday: 4,
-  excusedToday: 2,
+  excusedToday: 6,
   dailyTrends: [
     { date: '2026-02-16', dayLabel: 'Mon', rate: 95.3, present: 324, absent: 16 },
     { date: '2026-02-17', dayLabel: 'Tue', rate: 96.2, present: 327, absent: 13 },

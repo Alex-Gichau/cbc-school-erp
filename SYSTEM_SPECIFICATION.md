@@ -55,7 +55,7 @@ Ensures every child is accounted for every morning and alerts the school leaders
 
 ### How Roll Call Works
 1. **Morning Check-In:** At the start of the school day, the class teacher opens their digital attendance sheet.
-2. **One-Tap Roll Call:** The teacher marks each learner as **Present**, **Absent**, **Late**, or **Excused** (e.g., medical leave). A handy "Mark All Present" button allows swift check-ins, requiring only absentees to be adjusted.
+2. **One-Tap Roll Call:** The teacher marks each learner as **Present**, **Excused** (e.g., medical or approved family leave), or **Absent**. A handy "Mark All Present" button allows swift check-ins, requiring only absentees or excused learners to be adjusted.
 3. **Instant School Office Sync:** The moment the teacher saves roll call, the headteacher's dashboard updates immediately.
 
 ### School-Wide Attendance Analytics

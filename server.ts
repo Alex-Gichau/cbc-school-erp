@@ -22,7 +22,8 @@ import {
   AttendanceRecord,
   TimetableSlot,
   ExamPaper,
-  AttendanceAnalytics
+  AttendanceAnalytics,
+  AttendanceStatus
 } from './src/types';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -427,10 +428,10 @@ app.post('/api/attendance/mark', (req: Request, res: Response) => {
 
   let presentCount = 0;
   let absentCount = 0;
-  let lateCount = 0;
   let excusedCount = 0;
 
   records.forEach((rec: any) => {
+    const status: AttendanceStatus = (rec.status === 'absent' || rec.status === 'excused') ? rec.status : 'present';
     const item: AttendanceRecord = {
       id: `att_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
       date,
@@ -438,22 +439,21 @@ app.post('/api/attendance/mark', (req: Request, res: Response) => {
       studentId: rec.studentId,
       studentName: rec.studentName,
       admissionNumber: rec.admissionNumber,
-      status: rec.status || 'present',
+      status,
       reason: rec.reason || '',
       recordedBy: recordedBy || 'Teacher'
     };
 
-    if (rec.status === 'present') presentCount++;
-    else if (rec.status === 'absent') absentCount++;
-    else if (rec.status === 'late') lateCount++;
-    else if (rec.status === 'excused') excusedCount++;
+    if (item.status === 'present') presentCount++;
+    else if (item.status === 'absent') absentCount++;
+    else if (item.status === 'excused') excusedCount++;
 
     attendanceRecordsStore.push(item);
   });
 
   // Re-calculate analytics summary accurately
   const totalMarked = records.length;
-  const gradePresent = presentCount + lateCount;
+  const gradePresent = presentCount;
   const gradeRate = totalMarked > 0 ? Math.round((gradePresent / totalMarked) * 1000) / 10 : 100;
 
   // 1. Update gradeComparison for this grade
@@ -486,7 +486,6 @@ app.post('/api/attendance/mark', (req: Request, res: Response) => {
 
   attendanceAnalyticsStore.presentToday = totalPresentToday;
   attendanceAnalyticsStore.absentToday = totalAbsentAcrossGrades;
-  attendanceAnalyticsStore.lateToday = lateCount;
   attendanceAnalyticsStore.excusedToday = excusedCount;
 
   // 3. Update or insert dailyTrends for this date
@@ -522,7 +521,7 @@ app.post('/api/attendance/mark', (req: Request, res: Response) => {
   res.json({
     message: 'Attendance recorded successfully',
     analytics: attendanceAnalyticsStore,
-    summary: { totalMarked, presentCount, absentCount, lateCount, excusedCount, todayRate: schoolWideRate }
+    summary: { totalMarked, presentCount, absentCount, excusedCount, todayRate: schoolWideRate }
   });
 });
 

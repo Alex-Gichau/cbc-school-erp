@@ -258,7 +258,7 @@ export const QuickActionsFloatingMenu: React.FC<QuickActionsFloatingMenuProps> =
     {
       id: 'attendance-call',
       title: 'Take Morning Roll Call',
-      subtitle: 'Mark daily presence, absence & tardiness',
+      subtitle: 'Mark daily presence, excused & absence',
       badge: 'Daily',
       badgeColor: 'bg-teal-100 text-teal-800',
       icon: CalendarCheck,
