@@ -42,9 +42,11 @@ import {
   INITIAL_ATTENDANCE_RECORDS
 } from './data/mockData';
 import { CheckCircle2 } from 'lucide-react';
+import { useTheme } from './lib/theme';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const { theme, resolvedTheme, setTheme, toggleTheme, isDark } = useTheme();
 
   // Users & Role Switching (Dr. Arthur Pendelton - Admin, Sarah Jenkins - Teacher, Marcus Vance - Teacher)
   const [users, setUsers] = useState<User[]>(DEMO_USERS);
@@ -84,22 +86,6 @@ export default function App() {
     });
   };
 
-  // Keyboard shortcut: Ctrl + B or Cmd + B to toggle sidebar
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
-        // Only toggle if not currently typing in an input/textarea
-        const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
-        if (tag !== 'input' && tag !== 'textarea' && tag !== 'select') {
-          e.preventDefault();
-          handleToggleSidebar();
-        }
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -108,6 +94,32 @@ export default function App() {
       setToastMessage(null);
     }, 4000);
   };
+
+  // Global Keyboard shortcuts:
+  // - Ctrl + B / Cmd + B: Toggle sidebar
+  // - Shift + D: Quick toggle theme mode (Daylight / Low-Light Night Mode for teachers)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName?.toLowerCase();
+      const isInput = tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target as HTMLElement)?.isContentEditable;
+      if (isInput) return;
+
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'b') {
+        e.preventDefault();
+        handleToggleSidebar();
+      } else if (e.shiftKey && (e.key === 'D' || e.key === 'd') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault();
+        toggleTheme();
+        showToast(
+          isDark
+            ? '☀️ Daylight Light Mode activated.'
+            : '🌙 Low-Light Night Mode activated for after-hours work.'
+        );
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleTheme, isDark]);
 
   // Switch Active User / Role
   const handleSwitchUser = (user: User) => {
@@ -409,7 +421,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans flex flex-col antialiased w-full overflow-x-hidden">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans flex flex-col antialiased w-full overflow-x-hidden transition-colors duration-200">
       {/* Top Header Navbar */}
       <Navbar
         currentUser={currentUser}
@@ -417,11 +429,13 @@ export default function App() {
         onSwitchUser={handleSwitchUser}
         onOpenSpec={() => setActiveTab('specification')}
         dbStatus={dbStatus}
-        isSidebarCollapsed={isSidebarCollapsed}
-        onToggleSidebar={handleToggleSidebar}
         pendingExamsCount={pendingExamsCount}
         activeStudentsCount={students.filter((s) => s.status === 'active').length}
         onNavigateTab={(tab) => setActiveTab(tab)}
+        theme={theme}
+        resolvedTheme={resolvedTheme}
+        onThemeChange={setTheme}
+        onToggleTheme={toggleTheme}
       />
 
       {/* Main App Container */}
@@ -434,14 +448,18 @@ export default function App() {
           pendingExamsCount={pendingExamsCount}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={handleToggleSidebar}
+          theme={theme}
+          resolvedTheme={resolvedTheme}
+          onThemeChange={setTheme}
+          onToggleTheme={toggleTheme}
         />
 
         {/* Dynamic Content Body */}
-        <main className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 lg:p-8 xl:p-8 2xl:p-10 pb-8">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 lg:p-8 xl:p-8 2xl:p-10 pb-8 bg-slate-50 dark:bg-slate-950 transition-colors">
           <div className="w-full max-w-7xl xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto space-y-6">
             {/* Action Toast Feedback */}
             {toastMessage && (
-              <div className="fixed bottom-24 right-7 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-3 duration-200">
+              <div className="fixed bottom-24 right-7 z-50 bg-slate-900 dark:bg-slate-800 text-white text-xs font-semibold px-4 py-3 rounded-2xl shadow-2xl border border-slate-700 dark:border-slate-700 flex items-center gap-2.5 animate-in fade-in slide-in-from-bottom-3 duration-200">
                 <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
                 <span>{toastMessage}</span>
               </div>
@@ -549,6 +567,9 @@ export default function App() {
                 users={users}
                 onSwitchUser={handleSwitchUser}
                 userRole={currentUser.role}
+                theme={theme}
+                resolvedTheme={resolvedTheme}
+                onThemeChange={setTheme}
               />
             )}
           </div>

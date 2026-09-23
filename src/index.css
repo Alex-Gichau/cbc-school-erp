@@ -1,4 +1,18 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light;
+}
+
+:root.dark {
+  color-scheme: dark;
+}
+
+/* Ensure smooth theme transitions on surface backgrounds and text */
+body {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
 
 @media print {
   @page {

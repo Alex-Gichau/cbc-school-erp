@@ -27,9 +27,13 @@ import {
   Sparkles,
   ChevronRight,
   HelpCircle,
-  X
+  X,
+  Sun,
+  Moon,
+  Monitor
 } from 'lucide-react';
-import { User, UserRole } from '../types';
+import { User, UserRole, ThemeMode } from '../types';
+import { ThemeSwitcher } from './ThemeSwitcher';
 
 export interface FeaturePermission {
   id: string;
@@ -380,15 +384,21 @@ interface SystemSettingsManagerProps {
   users: User[];
   onSwitchUser: (user: User) => void;
   userRole: UserRole;
+  theme?: ThemeMode;
+  resolvedTheme?: 'light' | 'dark';
+  onThemeChange?: (mode: ThemeMode) => void;
 }
 
 export const SystemSettingsManager: React.FC<SystemSettingsManagerProps> = ({
   currentUser,
   users,
   onSwitchUser,
-  userRole
+  userRole,
+  theme = 'system',
+  resolvedTheme = 'light',
+  onThemeChange = (_mode: ThemeMode) => {}
 }) => {
-  const [activeTab, setActiveTab] = useState<'permissions' | 'session' | 'audit'>('permissions');
+  const [activeTab, setActiveTab] = useState<'permissions' | 'appearance' | 'session' | 'audit'>('permissions');
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'admin_only' | 'shared'>('all');
@@ -512,28 +522,47 @@ export const SystemSettingsManager: React.FC<SystemSettingsManagerProps> = ({
       )}
 
       {/* Settings Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 text-xs font-bold pb-px">
+      <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 text-xs font-bold pb-px overflow-x-auto no-scrollbar">
         <button
           onClick={() => setActiveTab('permissions')}
-          className={`pb-3 px-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
+          className={`pb-3 px-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer shrink-0 ${
             activeTab === 'permissions'
-              ? 'border-orange-500 text-orange-600'
-              : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
+              ? 'border-orange-500 text-orange-600 dark:text-orange-400'
+              : 'border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:border-slate-300'
           }`}
         >
           <ShieldCheck className="w-4 h-4" />
           <span>Role Permissions Matrix</span>
-          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-orange-100 text-orange-700 font-extrabold">
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-orange-100 dark:bg-orange-950/60 text-orange-700 dark:text-orange-300 font-extrabold">
             {totalCount}
           </span>
         </button>
 
         <button
+          onClick={() => setActiveTab('appearance')}
+          className={`pb-3 px-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer shrink-0 ${
+            activeTab === 'appearance'
+              ? 'border-orange-500 text-orange-600 dark:text-orange-400'
+              : 'border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:border-slate-300'
+          }`}
+        >
+          {resolvedTheme === 'dark' ? (
+            <Moon className="w-4 h-4 text-indigo-400" />
+          ) : (
+            <Sun className="w-4 h-4 text-amber-500" />
+          )}
+          <span>Display & Low-Light Mode</span>
+          <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-extrabold capitalize">
+            {theme === 'system' ? 'Auto' : resolvedTheme}
+          </span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('session')}
-          className={`pb-3 px-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
+          className={`pb-3 px-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer shrink-0 ${
             activeTab === 'session'
-              ? 'border-orange-500 text-orange-600'
-              : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
+              ? 'border-orange-500 text-orange-600 dark:text-orange-400'
+              : 'border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:border-slate-300'
           }`}
         >
           <Building2 className="w-4 h-4" />
@@ -542,10 +571,10 @@ export const SystemSettingsManager: React.FC<SystemSettingsManagerProps> = ({
 
         <button
           onClick={() => setActiveTab('audit')}
-          className={`pb-3 px-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer ${
+          className={`pb-3 px-3 flex items-center gap-2 border-b-2 transition-colors cursor-pointer shrink-0 ${
             activeTab === 'audit'
-              ? 'border-orange-500 text-orange-600'
-              : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
+              ? 'border-orange-500 text-orange-600 dark:text-orange-400'
+              : 'border-transparent text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100 hover:border-slate-300'
           }`}
         >
           <History className="w-4 h-4" />
@@ -795,6 +824,142 @@ export const SystemSettingsManager: React.FC<SystemSettingsManagerProps> = ({
                   )}
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB: DISPLAY & LOW-LIGHT NIGHT MODE */}
+      {activeTab === 'appearance' && (
+        <div className="space-y-6 max-w-4xl">
+          {/* Header Card */}
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-base font-bold text-slate-900 dark:text-slate-100 font-serif flex items-center gap-2">
+                  <span>Display Theme & Night Shift</span>
+                  <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-300 border border-indigo-200/80 dark:border-indigo-800/80">
+                    Low-Light Ready
+                  </span>
+                </h2>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
+                  Adjust color contrast for high daylight visibility in sunny classrooms or soft, low-glare dark mode for teachers recording marks and reviewing exams after hours.
+                </p>
+              </div>
+
+              {/* Segmented Control */}
+              <ThemeSwitcher
+                theme={theme}
+                resolvedTheme={resolvedTheme}
+                onThemeChange={onThemeChange}
+                variant="segmented"
+              />
+            </div>
+
+            {/* Quick Status Pill */}
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200/80 dark:border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-3">
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                    resolvedTheme === 'dark'
+                      ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                      : 'bg-amber-500 text-white shadow-md shadow-amber-500/20'
+                  }`}
+                >
+                  {resolvedTheme === 'dark' ? <Moon className="w-5 h-5" /> : <Sun className="w-5 h-5" />}
+                </div>
+                <div>
+                  <div className="font-bold text-slate-900 dark:text-slate-100">
+                    Active Render Engine: {resolvedTheme === 'dark' ? 'Low-Light Dark Palette' : 'Daylight High-Contrast Palette'}
+                  </div>
+                  <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Mode configured as: <strong className="capitalize text-orange-600 dark:text-orange-400">{theme}</strong>
+                    {theme === 'system' && ' (matches your operating system clock & preferences)'}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Quick key:</span>
+                <kbd className="px-2 py-1 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg shadow-2xs">
+                  Shift + D
+                </kbd>
+              </div>
+            </div>
+
+            {/* 3 Mode Feature Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div
+                onClick={() => onThemeChange('light')}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                  theme === 'light'
+                    ? 'bg-orange-50/60 dark:bg-orange-950/20 border-orange-500/80 ring-2 ring-orange-400/20'
+                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-750 hover:border-slate-300 dark:hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold">
+                    <Sun className="w-4 h-4" />
+                  </div>
+                  {theme === 'light' && (
+                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-orange-500 text-white">
+                      Selected
+                    </span>
+                  )}
+                </div>
+                <div className="font-bold text-xs text-slate-900 dark:text-slate-100">Light Daylight Mode</div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  Clean, paper-white backgrounds engineered for brightly lit classrooms and checking document print layouts before press release.
+                </p>
+              </div>
+
+              <div
+                onClick={() => onThemeChange('dark')}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                  theme === 'dark'
+                    ? 'bg-orange-50/60 dark:bg-orange-950/20 border-orange-500/80 ring-2 ring-orange-400/20'
+                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-750 hover:border-slate-300 dark:hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-950/60 text-indigo-700 dark:text-indigo-400 flex items-center justify-center font-bold">
+                    <Moon className="w-4 h-4" />
+                  </div>
+                  {theme === 'dark' && (
+                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-orange-500 text-white">
+                      Selected
+                    </span>
+                  )}
+                </div>
+                <div className="font-bold text-xs text-slate-900 dark:text-slate-100">Dark Night Mode</div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  Deep slate low-light contrast. Reduces eye fatigue and screen glare for teachers grading student exams and compiling terminal reports in the evening.
+                </p>
+              </div>
+
+              <div
+                onClick={() => onThemeChange('system')}
+                className={`p-4 rounded-2xl border transition-all cursor-pointer ${
+                  theme === 'system'
+                    ? 'bg-orange-50/60 dark:bg-orange-950/20 border-orange-500/80 ring-2 ring-orange-400/20'
+                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-750 hover:border-slate-300 dark:hover:border-slate-700'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold">
+                    <Monitor className="w-4 h-4" />
+                  </div>
+                  {theme === 'system' && (
+                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-orange-500 text-white">
+                      Selected
+                    </span>
+                  )}
+                </div>
+                <div className="font-bold text-xs text-slate-900 dark:text-slate-100">System Auto Sync</div>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                  Automatically adapts to your laptop, tablet, or phone OS schedule — switching to light by day and night shift after sunset.
+                </p>
+              </div>
             </div>
           </div>
         </div>
