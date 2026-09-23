@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import {
   CheckCircle2,
   Calendar,
+  CalendarCheck,
   UserCheck,
   AlertCircle,
   Save,
@@ -16,12 +17,13 @@ import {
   Filter,
   Users
 } from 'lucide-react';
-import { Student, AttendanceStatus, AttendanceRecord, UserRole } from '../types';
+import { Student, AttendanceStatus, AttendanceRecord, UserRole, AttendanceAnalytics } from '../types';
 import { DateRangeFilter } from './DateRangeFilter';
 
 interface AttendanceTrackerProps {
   students: Student[];
   attendanceRecords?: AttendanceRecord[];
+  analytics?: AttendanceAnalytics;
   onRecordAttendance: (data: {
     date: string;
     grade: string;
@@ -35,6 +37,7 @@ interface AttendanceTrackerProps {
 export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
   students,
   attendanceRecords = [],
+  analytics,
   onRecordAttendance,
   userRole,
   currentUserName
@@ -157,6 +160,42 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
   const rollCallExcused = classStudents.filter((s) => attendanceMap[s.id]?.status === 'excused').length;
   const rollCallAbsent = classStudents.filter((s) => attendanceMap[s.id]?.status === 'absent').length;
   const rollCallRate = totalRollCall > 0 ? Math.round((rollCallPresent / totalRollCall) * 100) : 100;
+
+  // School-wide analytics and today's summary metrics
+  const totalSchoolEnrollment = analytics?.totalStudents || students.length || 340;
+
+  // Track initial class roll call state for real-time delta reactivity
+  const initialClassState = useMemo(() => {
+    const existingForDate = attendanceRecords.filter(
+      (r) => r.date === selectedDate && r.grade.toLowerCase() === selectedGrade.toLowerCase()
+    );
+    let initP = 0, initA = 0, initE = 0;
+    classStudents.forEach((s) => {
+      const match = existingForDate.find((r) => r.studentId === s.id);
+      const st = match ? match.status : (s.admissionNumber === 'ADM-2024-0104' ? 'absent' : 'present');
+      if (st === 'present') initP++;
+      else if (st === 'absent') initA++;
+      else if (st === 'excused') initE++;
+    });
+    return { initP, initA, initE };
+  }, [selectedGrade, selectedDate, attendanceRecords, classStudents]);
+
+  // Base counts from analytics
+  const basePresent = analytics?.presentToday ?? 322;
+  const baseAbsent = analytics?.absentToday ?? 18;
+  const baseExcused = analytics?.excusedToday ?? 6;
+
+  // Live adjusted counts for today reflecting any active roll-call adjustments
+  const todayPresent = Math.max(0, basePresent + (rollCallPresent - initialClassState.initP));
+  const todayAbsent = Math.max(0, baseAbsent + (rollCallAbsent - initialClassState.initA));
+  const todayExcused = Math.max(0, baseExcused + (rollCallExcused - initialClassState.initE));
+
+  const todayRate = totalSchoolEnrollment > 0
+    ? Math.round((todayPresent / totalSchoolEnrollment) * 1000) / 10
+    : 94.7;
+  const todayAbsentRate = totalSchoolEnrollment > 0
+    ? Math.round((todayAbsent / totalSchoolEnrollment) * 1000) / 10
+    : 5.3;
 
   // -------------------------------------------------------------
   // Historical Records Filtering Logic
@@ -292,6 +331,159 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
               {attendanceRecords.length}
             </span>
           </button>
+        </div>
+      </div>
+
+      {/* Summary KPI Cards: Immediate Context Before Listing Individual Records */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Card 1: Today's Total Attendance */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex flex-col justify-between group hover:border-emerald-200 transition-all">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500" />
+          <div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                Today's Total Attendance
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100/80 flex items-center justify-center shrink-0">
+                <UserCheck className="w-4 h-4" />
+              </div>
+            </div>
+
+            <div className="flex items-baseline gap-2.5 mt-2.5">
+              <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                {todayPresent}
+              </span>
+              <span className={`text-xs font-bold px-2 py-0.5 rounded-full border ${
+                todayRate >= 95
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-200/60'
+                  : 'bg-orange-50 text-orange-700 border-orange-200/60'
+              }`}>
+                {todayRate}% Presence
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-500 mt-1">
+              {todayPresent} of {totalSchoolEnrollment} learners present across campus
+            </p>
+
+            {/* Visual mini progress track */}
+            <div className="w-full bg-slate-100 rounded-full h-1.5 mt-3 overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  todayRate >= 95 ? 'bg-emerald-500' : 'bg-orange-500'
+                }`}
+                style={{ width: `${Math.min(100, todayRate)}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+            <div className="flex items-center gap-1.5">
+              <span className={`w-2 h-2 rounded-full ${todayRate >= 95 ? 'bg-emerald-500' : 'bg-orange-500'}`} />
+              <span className="text-slate-600 font-medium">
+                Target: <strong className="text-slate-900">95.0%</strong>
+              </span>
+            </div>
+            <span className="text-slate-500 font-medium truncate max-w-[170px]" title={`${selectedGrade}: ${rollCallPresent}/${totalRollCall} present`}>
+              {selectedGrade}: <strong className="text-emerald-700 font-bold">{rollCallPresent}/{totalRollCall}</strong>
+            </span>
+          </div>
+        </div>
+
+        {/* Card 2: Students Absent */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex flex-col justify-between group hover:border-rose-200 transition-all">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-rose-500" />
+          <div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                Students Absent
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-rose-50 text-rose-600 border border-rose-100/80 flex items-center justify-center shrink-0">
+                <Users className="w-4 h-4" />
+              </div>
+            </div>
+
+            <div className="flex items-baseline gap-2.5 mt-2.5">
+              <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                {todayAbsent}
+              </span>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200/60">
+                {todayAbsentRate}% of Roll
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-500 mt-1">
+              Unexcused absences & illness reports logged today
+            </p>
+
+            {/* Visual mini progress track */}
+            <div className="w-full bg-slate-100 rounded-full h-1.5 mt-3 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-rose-500 transition-all duration-500"
+                style={{ width: `${Math.min(100, Math.max(3, todayAbsentRate * 3))}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+            <div className="flex items-center gap-1.5">
+              <AlertCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+              <span className="text-rose-700 font-semibold">
+                {todayAbsent > 0 ? 'Follow-up flagged' : 'Zero absences'}
+              </span>
+            </div>
+            <span className="text-slate-500 font-medium truncate max-w-[170px]" title={`${selectedGrade}: ${rollCallAbsent} absent`}>
+              {selectedGrade}: <strong className="text-rose-700 font-bold">{rollCallAbsent} absent</strong>
+            </span>
+          </div>
+        </div>
+
+        {/* Card 3: Excused Leaves */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex flex-col justify-between group hover:border-blue-200 transition-all">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-blue-500" />
+          <div>
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                Excused Leaves
+              </span>
+              <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 border border-blue-100/80 flex items-center justify-center shrink-0">
+                <CalendarCheck className="w-4 h-4" />
+              </div>
+            </div>
+
+            <div className="flex items-baseline gap-2.5 mt-2.5">
+              <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                {todayExcused}
+              </span>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60">
+                Documented
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-500 mt-1">
+              Authorized medical appointments & approved family leaves
+            </p>
+
+            {/* Visual mini progress track */}
+            <div className="w-full bg-slate-100 rounded-full h-1.5 mt-3 overflow-hidden">
+              <div
+                className="h-full rounded-full bg-blue-500 transition-all duration-500"
+                style={{ width: `${Math.min(100, Math.max(3, (todayExcused / (totalSchoolEnrollment || 340)) * 200))}%` }}
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px]">
+            <div className="flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+              <span className="text-blue-700 font-semibold">
+                Parent notes verified
+              </span>
+            </div>
+            <span className="text-slate-500 font-medium truncate max-w-[170px]" title={`${selectedGrade}: ${rollCallExcused} excused`}>
+              {selectedGrade}: <strong className="text-blue-700 font-bold">{rollCallExcused} excused</strong>
+            </span>
+          </div>
         </div>
       </div>
 

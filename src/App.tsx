@@ -500,6 +500,7 @@ export default function App() {
               <AttendanceTracker
                 students={students}
                 attendanceRecords={attendanceRecords}
+                analytics={analytics}
                 onRecordAttendance={handleRecordAttendance}
                 userRole={currentUser.role}
                 currentUserName={currentUser.name}

@@ -29,9 +29,22 @@ import {
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const PORT = 3000;
+const PORT = parseInt(process.env.PORT || '3000', 10);
 const app = express();
 app.use(express.json());
+
+// Ignore non-fatal WebSocket and HMR runtime errors per AI Studio environment constraints
+process.on('uncaughtException', (err: any) => {
+  if (err?.message?.includes('WebSocket') || err?.code === 'EADDRINUSE') {
+    console.warn('[Edura Server] Ignored non-fatal runtime error:', err.message);
+    return;
+  }
+  console.error('[Edura Server] Uncaught exception:', err);
+});
+
+process.on('unhandledRejection', (reason: any) => {
+  console.warn('[Edura Server] Unhandled rejection:', reason);
+});
 
 // In-Memory persistent fallback state initialized with rich seed data
 let studentsStore: Student[] = [...INITIAL_STUDENTS];
@@ -675,15 +688,36 @@ app.get('/api/specification', (req: Request, res: Response) => {
 // -------------------------------------------------------------
 // Vite Middleware / Static Serving
 // -------------------------------------------------------------
+let httpServer: any = null;
+
 async function startServer() {
-  await initMongoDB();
+  // Start DB connection asynchronously in background so server listens immediately
+  initMongoDB().catch((err) => {
+    console.warn('[Database] Background MongoDB connection warning:', err);
+  });
 
   if (process.env.NODE_ENV !== 'production') {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: 'spa'
-    });
-    app.use(vite.middlewares);
+    try {
+      const vite = await createViteServer({
+        server: {
+          middlewareMode: true,
+          hmr: false, // Prevents port 24678 collisions in containerized dev environment
+          watch: process.env.DISABLE_HMR === 'true' ? null : {}
+        },
+        appType: 'spa'
+      });
+      app.use(vite.middlewares);
+      console.log('[Edura Server] Vite dev middleware mounted.');
+    } catch (viteErr) {
+      console.error('[Edura Server] Error mounting Vite middleware, checking static dist fallback:', viteErr);
+      const distPath = path.join(process.cwd(), 'dist');
+      if (fs.existsSync(distPath)) {
+        app.use(express.static(distPath));
+        app.get('*', (req: Request, res: Response) => {
+          res.sendFile(path.join(distPath, 'index.html'));
+        });
+      }
+    }
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
@@ -692,9 +726,45 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
+  httpServer = app.listen(PORT, '0.0.0.0', () => {
     console.log(`[Edura Server] Running at http://localhost:${PORT}`);
   });
+
+  httpServer.on('error', (err: any) => {
+    if (err.code === 'EADDRINUSE') {
+      console.warn(`[Edura Server] Port ${PORT} busy, retrying in 500ms...`);
+      setTimeout(() => {
+        if (httpServer) {
+          try {
+            httpServer.close();
+          } catch (_) {}
+        }
+        httpServer = app.listen(PORT, '0.0.0.0', () => {
+          console.log(`[Edura Server] Successfully bound at http://localhost:${PORT}`);
+        });
+      }, 500);
+    } else {
+      console.error('[Edura Server] Server error:', err);
+    }
+  });
 }
+
+process.on('SIGTERM', () => {
+  console.log('[Edura Server] SIGTERM received, shutting down gracefully...');
+  if (httpServer) {
+    httpServer.close(() => process.exit(0));
+  } else {
+    process.exit(0);
+  }
+});
+
+process.on('SIGINT', () => {
+  console.log('[Edura Server] SIGINT received, shutting down gracefully...');
+  if (httpServer) {
+    httpServer.close(() => process.exit(0));
+  } else {
+    process.exit(0);
+  }
+});
 
 startServer();
