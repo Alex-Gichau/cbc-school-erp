@@ -15,10 +15,12 @@ import {
   History,
   ClipboardList,
   Filter,
-  Users
+  Users,
+  Activity
 } from 'lucide-react';
 import { Student, AttendanceStatus, AttendanceRecord, UserRole, AttendanceAnalytics } from '../types';
 import { DateRangeFilter } from './DateRangeFilter';
+import { AttendanceTrendsChart } from './AttendanceTrendsChart';
 
 interface AttendanceTrackerProps {
   students: Student[];
@@ -42,8 +44,8 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
   userRole,
   currentUserName
 }) => {
-  // Top view toggle: 'rollcall' vs 'historical'
-  const [activeView, setActiveView] = useState<'rollcall' | 'historical'>('rollcall');
+  // Top view toggle: 'rollcall' vs 'historical' vs 'trends'
+  const [activeView, setActiveView] = useState<'rollcall' | 'historical' | 'trends'>('rollcall');
 
   // Roll Call state
   const [selectedGrade, setSelectedGrade] = useState('Grade 10-A');
@@ -303,14 +305,14 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
         </div>
 
         {/* View Switcher Tabs */}
-        <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200/80">
+        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200/80 dark:border-slate-750 flex-wrap">
           <button
             type="button"
             onClick={() => setActiveView('rollcall')}
             className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeView === 'rollcall'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <ClipboardList className="w-3.5 h-3.5 text-orange-500" />
@@ -318,16 +320,31 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
           </button>
           <button
             type="button"
+            onClick={() => setActiveView('trends')}
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeView === 'trends'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Activity className="w-3.5 h-3.5 text-orange-500" />
+            <span>Presence Trends & Analytics</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300">
+              Live
+            </span>
+          </button>
+          <button
+            type="button"
             onClick={() => setActiveView('historical')}
             className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeView === 'historical'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
+                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <History className="w-3.5 h-3.5 text-orange-500" />
-            <span>Historical Attendance Logs</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-orange-100 text-orange-800">
+            <span>Historical Logs</span>
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-300">
               {attendanceRecords.length}
             </span>
           </button>
@@ -335,7 +352,8 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
       </div>
 
       {/* Summary KPI Cards: Immediate Context Before Listing Individual Records */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {activeView !== 'trends' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Card 1: Today's Total Attendance */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-xs relative overflow-hidden flex flex-col justify-between group hover:border-emerald-200 transition-all">
           <div className="absolute top-0 left-0 right-0 h-1 bg-emerald-500" />
@@ -486,6 +504,7 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
           </div>
         </div>
       </div>
+      )}
 
       {/* ========================================================= */}
       {/* VIEW 1: DAILY ROLL CALL REGISTER                          */}
@@ -920,6 +939,19 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
               </div>
             )}
           </div>
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* VIEW 3: PRESENCE TRENDS & ANALYTICS                       */}
+      {/* ========================================================= */}
+      {activeView === 'trends' && analytics && (
+        <div className="space-y-6 animate-in fade-in duration-150">
+          <AttendanceTrendsChart
+            analytics={analytics}
+            schoolTotal={totalSchoolEnrollment}
+            onNavigateAttendance={() => setActiveView('rollcall')}
+          />
         </div>
       )}
     </div>

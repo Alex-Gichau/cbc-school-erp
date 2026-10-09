@@ -264,15 +264,15 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
           />
 
           {/* Grade Attendance Progress Bars (Direct link to roll call) */}
-          <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-xs">
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs transition-colors">
             <div className="flex items-center justify-between mb-3">
               <div>
-                <span className="text-xs font-bold text-slate-800">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
                   Grade-by-Grade Attendance Standing
                 </span>
-                <p className="text-[10px] text-slate-400">Click any class to take or update today's roll call</p>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500">Click any class to take or update today's roll call</p>
               </div>
-              <div className="flex items-center gap-3 text-[10px] font-semibold text-slate-500">
+              <div className="flex items-center gap-3 text-[10px] font-semibold text-slate-500 dark:text-slate-400">
                 <span className="flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-emerald-500"></span> 95-100%
                 </span>
@@ -290,23 +290,23 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                 <div
                   key={idx}
                   onClick={() => onNavigateTab('attendance')}
-                  className="p-3 bg-slate-50/80 hover:bg-orange-50/40 rounded-xl border border-slate-200/60 hover:border-orange-200 transition-all flex flex-col justify-between cursor-pointer group"
+                  className="p-3 bg-slate-50/80 dark:bg-slate-800/60 hover:bg-orange-50/40 dark:hover:bg-slate-800 rounded-xl border border-slate-200/60 dark:border-slate-700/80 hover:border-orange-200 dark:hover:border-orange-800 transition-all flex flex-col justify-between cursor-pointer group"
                   title={`Click to open attendance register for ${item.grade}`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-900 group-hover:text-orange-600 transition-colors">
+                    <span className="text-xs font-bold text-slate-900 dark:text-slate-100 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
                       {item.grade}
                     </span>
                     <span
-                      className={`text-xs font-black ${
-                        item.rate >= 95 ? 'text-emerald-700' : 'text-orange-600'
+                      className={`text-xs font-black font-mono ${
+                        item.rate >= 95 ? 'text-emerald-600 dark:text-emerald-400' : 'text-orange-600 dark:text-orange-400'
                       }`}
                     >
                       {item.rate}%
                     </span>
                   </div>
                   {/* Progress Line */}
-                  <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden mt-2">
+                  <div className="w-full bg-slate-200 dark:bg-slate-700 h-1.5 rounded-full overflow-hidden mt-2">
                     <div
                       style={{ width: `${Math.min(100, Math.max(0, item.rate))}%` }}
                       className={`h-full rounded-full ${
@@ -314,7 +314,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                       }`}
                     ></div>
                   </div>
-                  <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1.5">
+                  <div className="flex items-center justify-between text-[10px] text-slate-400 dark:text-slate-500 mt-1.5">
                     <span>{item.totalStudents} enrolled</span>
                     <span>{item.absentCount} absent</span>
                   </div>
@@ -327,25 +327,25 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
         {/* Right Column: Quick School Actions (styled with Dark Circles like Screenshot's Quick IT Actions) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-5">
           {/* Quick IT Actions Panel */}
-          <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-xs">
+          <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs transition-colors">
             <div className="flex items-center gap-2 mb-4">
               <span className="w-2 h-2 rounded-full bg-orange-500"></span>
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-200">
                 Quick School Actions
               </h3>
             </div>
 
-            {/* Circular Dark Buttons (Direct translation of Screenshot's Quick IT Actions) */}
+            {/* Circular Dark Buttons */}
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => onNavigateTab('attendance')}
-                className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-50 hover:bg-orange-50/50 border border-slate-200/70 text-center transition-all group cursor-pointer"
+                className="flex flex-col items-center justify-center p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 hover:bg-orange-50/50 dark:hover:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-center transition-all group cursor-pointer"
               >
-                <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center group-hover:bg-orange-500 transition-colors shadow-xs">
+                <div className="w-9 h-9 rounded-full bg-slate-900 dark:bg-slate-700 text-white flex items-center justify-center group-hover:bg-orange-500 transition-colors shadow-xs">
                   <CalendarCheck className="w-4 h-4" />
                 </div>
-                <span className="text-[11px] font-bold text-slate-800 mt-2">Morning Roll Call</span>
-                <span className="text-[10px] text-slate-400">Class registers</span>
+                <span className="text-[11px] font-bold text-slate-800 dark:text-slate-200 mt-2">Morning Roll Call</span>
+                <span className="text-[10px] text-slate-400 dark:text-slate-500">Class registers</span>
               </button>
 
               <button
