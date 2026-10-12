@@ -16,6 +16,7 @@ import { ExamPrintPortal } from './components/ExamPrintPortal';
 import { ReportCardsManager } from './components/ReportCardsManager';
 import { SystemSpecificationViewer } from './components/SystemSpecificationViewer';
 import { SystemSettingsManager } from './components/SystemSettingsManager';
+import { LandingPage } from './components/LandingPage';
 
 import {
   User,
@@ -45,6 +46,7 @@ import { CheckCircle2 } from 'lucide-react';
 import { useTheme } from './lib/theme';
 
 export default function App() {
+  const [appMode, setAppMode] = useState<'landing' | 'system'>('landing');
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const { theme, resolvedTheme, setTheme, toggleTheme, isDark } = useTheme();
 
@@ -420,6 +422,21 @@ export default function App() {
     showToast(`Exam status changed to ${status.replace('_', ' ').toUpperCase()}.`);
   };
 
+  if (appMode === 'landing') {
+    return (
+      <LandingPage
+        onEnterSystem={(role) => {
+          if (role === 'admin') {
+            setCurrentUser(users.find((u) => u.role === 'admin') || users[0]);
+          } else {
+            setCurrentUser(users.find((u) => u.role === 'teacher') || users[1]);
+          }
+          setAppMode('system');
+        }}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans flex flex-col antialiased w-full overflow-x-hidden transition-colors duration-200">
       {/* Top Header Navbar */}
@@ -436,6 +453,7 @@ export default function App() {
         resolvedTheme={resolvedTheme}
         onThemeChange={setTheme}
         onToggleTheme={toggleTheme}
+        onReturnToLanding={() => setAppMode('landing')}
       />
 
       {/* Main App Container */}

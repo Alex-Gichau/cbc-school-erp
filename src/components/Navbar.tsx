@@ -8,7 +8,8 @@ import {
   ChevronDown,
   Search,
   Printer,
-  Users
+  Users,
+  Globe
 } from 'lucide-react';
 import { User, ThemeMode } from '../types';
 import { TabType } from './Sidebar';
@@ -27,6 +28,7 @@ interface NavbarProps {
   resolvedTheme?: 'light' | 'dark';
   onThemeChange?: (theme: ThemeMode) => void;
   onToggleTheme?: () => void;
+  onReturnToLanding?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -40,7 +42,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   theme = 'system',
   resolvedTheme = 'light',
   onThemeChange = () => {},
-  onToggleTheme = () => {}
+  onToggleTheme = () => {},
+  onReturnToLanding
 }) => {
   const [showDropdown, setShowDropdown] = React.useState(false);
   const [searchValue, setSearchValue] = React.useState('');
@@ -100,38 +103,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Right Status Badges, Theme Toggle & User Profile */}
         <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-          {/* Active Term Pill */}
-          <div className="hidden xl:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-orange-50/80 dark:bg-orange-950/30 border border-orange-200/60 dark:border-orange-900/40 text-orange-700 dark:text-orange-400 text-xs font-semibold shrink-0">
-            <Calendar className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-            <span>Term 1, 2026</span>
-            <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse ml-0.5" title="Active Term Live" />
-          </div>
-
-          {/* Active Learners Pill */}
-          {activeStudentsCount > 0 && (
+          {/* Public Landing Page Return Button */}
+          {onReturnToLanding && (
             <button
               type="button"
-              onClick={() => onNavigateTab && onNavigateTab('enrolment')}
-              className="hidden lg:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-50/90 dark:bg-emerald-950/30 border border-emerald-200/80 dark:border-emerald-900/40 text-emerald-700 dark:text-emerald-400 text-xs font-semibold hover:bg-emerald-100/80 dark:hover:bg-emerald-900/40 transition-colors cursor-pointer shrink-0"
-              title="View enrolled learners directory"
+              onClick={onReturnToLanding}
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-950/60 hover:bg-orange-100 dark:hover:bg-orange-900/80 transition-colors border border-orange-200/80 dark:border-orange-800 cursor-pointer shrink-0"
+              title="Return to Public Landing Page"
             >
-              <Users className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span className="text-[11px] text-slate-600 dark:text-slate-400">Learners:</span>
-              <span className="font-extrabold text-emerald-800 dark:text-emerald-300">{activeStudentsCount}</span>
+              <Globe className="w-3.5 h-3.5 text-orange-500 shrink-0" />
+              <span>Public Site</span>
             </button>
           )}
-
-          {/* Print Queue Alert Pill */}
-          <button
-            type="button"
-            onClick={() => onNavigateTab && onNavigateTab('exams')}
-            className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-rose-50/90 dark:bg-rose-950/30 border border-rose-200/80 dark:border-rose-900/40 text-rose-700 dark:text-rose-400 text-xs font-semibold hover:bg-rose-100/80 dark:hover:bg-rose-900/40 transition-colors cursor-pointer shrink-0"
-            title="Open Exam Print Room & Requisitions"
-          >
-            <Printer className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
-            <span className="hidden md:inline text-[11px] text-slate-600 dark:text-slate-400">Print Queue:</span>
-            <span className="font-extrabold text-rose-800 dark:text-rose-300">{pendingExamsCount}</span>
-          </button>
 
           {/* Spec Guide Button */}
           <button

@@ -25,7 +25,6 @@ import {
 import { AttendanceAnalytics, Student, UserRole, FeePayment } from '../types';
 import { TabType } from './Sidebar';
 import { QuickActionsFloatingMenu } from './QuickActionsFloatingMenu';
-import { AttendanceTrendsChart } from './AttendanceTrendsChart';
 
 interface DashboardOverviewProps {
   analytics: AttendanceAnalytics;
@@ -255,15 +254,9 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
 
       {/* Mid Section: Attendance & Roll Call Trend Analysis (Shadcn Chart & Grade Progress) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Main Chart Column */}
+        {/* Grade Attendance Progress Bars & Visual Analytics Graphs */}
         <div className="lg:col-span-2 space-y-5">
-          <AttendanceTrendsChart
-            analytics={analytics}
-            schoolTotal={schoolTotal}
-            onNavigateAttendance={() => onNavigateTab('attendance')}
-          />
-
-          {/* Grade Attendance Progress Bars (Direct link to roll call) */}
+          {/* Grade Attendance Progress Bars */}
           <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs transition-colors">
             <div className="flex items-center justify-between mb-3">
               <div>
@@ -322,6 +315,7 @@ export const DashboardOverview: React.FC<DashboardOverviewProps> = ({
               ))}
             </div>
           </div>
+
         </div>
 
         {/* Right Column: Quick School Actions (styled with Dark Circles like Screenshot's Quick IT Actions) */}

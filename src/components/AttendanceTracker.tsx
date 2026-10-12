@@ -20,7 +20,6 @@ import {
 } from 'lucide-react';
 import { Student, AttendanceStatus, AttendanceRecord, UserRole, AttendanceAnalytics } from '../types';
 import { DateRangeFilter } from './DateRangeFilter';
-import { AttendanceTrendsChart } from './AttendanceTrendsChart';
 
 interface AttendanceTrackerProps {
   students: Student[];
@@ -44,8 +43,8 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
   userRole,
   currentUserName
 }) => {
-  // Top view toggle: 'rollcall' vs 'historical' vs 'trends'
-  const [activeView, setActiveView] = useState<'rollcall' | 'historical' | 'trends'>('rollcall');
+  // Top view toggle: 'rollcall' vs 'historical'
+  const [activeView, setActiveView] = useState<'rollcall' | 'historical'>('rollcall');
 
   // Roll Call state
   const [selectedGrade, setSelectedGrade] = useState('Grade 10-A');
@@ -318,21 +317,7 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
             <ClipboardList className="w-3.5 h-3.5 text-orange-500" />
             <span>Daily Roll Call Register</span>
           </button>
-          <button
-            type="button"
-            onClick={() => setActiveView('trends')}
-            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              activeView === 'trends'
-                ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-xs'
-                : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            <Activity className="w-3.5 h-3.5 text-orange-500" />
-            <span>Presence Trends & Analytics</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-orange-100 dark:bg-orange-950/60 text-orange-800 dark:text-orange-300">
-              Live
-            </span>
-          </button>
+
           <button
             type="button"
             onClick={() => setActiveView('historical')}
@@ -942,18 +927,6 @@ export const AttendanceTracker: React.FC<AttendanceTrackerProps> = ({
         </div>
       )}
 
-      {/* ========================================================= */}
-      {/* VIEW 3: PRESENCE TRENDS & ANALYTICS                       */}
-      {/* ========================================================= */}
-      {activeView === 'trends' && analytics && (
-        <div className="space-y-6 animate-in fade-in duration-150">
-          <AttendanceTrendsChart
-            analytics={analytics}
-            schoolTotal={totalSchoolEnrollment}
-            onNavigateAttendance={() => setActiveView('rollcall')}
-          />
-        </div>
-      )}
     </div>
   );
 };
