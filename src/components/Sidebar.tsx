@@ -16,7 +16,8 @@ import {
   SlidersHorizontal,
   Menu,
   Check,
-  X
+  X,
+  Globe
 } from 'lucide-react';
 import { UserRole, ThemeMode } from '../types';
 import { ThemeSwitcher } from './ThemeSwitcher';
@@ -31,7 +32,8 @@ export type TabType =
   | 'exams'
   | 'reports'
   | 'specification'
-  | 'settings';
+  | 'settings'
+  | 'website-cms';
 
 interface SidebarProps {
   currentTab: TabType;
@@ -108,6 +110,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
     {
       title: 'ADMINISTRATION & SETTINGS',
       items: [
+        {
+          id: 'website-cms' as TabType,
+          label: 'Website CMS',
+          shortLabel: 'Web CMS',
+          subLabel: 'Landing Page & Content',
+          icon: Globe,
+          roles: ['admin'] as UserRole[]
+        },
         {
           id: 'settings' as TabType,
           label: 'System Settings',

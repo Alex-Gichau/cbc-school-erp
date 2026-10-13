@@ -16,6 +16,7 @@ import { ExamPrintPortal } from './components/ExamPrintPortal';
 import { ReportCardsManager } from './components/ReportCardsManager';
 import { SystemSpecificationViewer } from './components/SystemSpecificationViewer';
 import { SystemSettingsManager } from './components/SystemSettingsManager';
+import { WebsiteContentManager, WebsiteContent } from './components/WebsiteContentManager';
 import { LandingPage } from './components/LandingPage';
 
 import {
@@ -68,6 +69,25 @@ export default function App() {
   const [timetableSlots, setTimetableSlots] = useState<TimetableSlot[]>(INITIAL_TIMETABLE);
   const [exams, setExams] = useState<ExamPaper[]>(INITIAL_EXAMS);
   const [attendanceRecords, setAttendanceRecords] = useState<AttendanceRecord[]>(INITIAL_ATTENDANCE_RECORDS);
+
+  // Website CMS State
+  const [websiteContent, setWebsiteContent] = useState<WebsiteContent>({
+    announcementText: 'PCEA St Andrews Kindergarten Portal (kindergarten.pceastandrews.org) — Admissions Open.',
+    phone: '0786198873',
+    email: 'kindergarten@pceastandrews.org',
+    altEmail: 'pceastandrewskindergarten@gmail.com',
+    heroTitle: 'Shaping Bright Futures with Christian Values & Montessori Excellence',
+    heroSubtitle: 'Located in the serene surroundings of St Andrews Compound, Church Road, Nairobi, PCEA St Andrews Kindergarten provides a holistic, loving, and stimulating environment where children discover their full potential through play-based learning, CBC curriculum foundations, and spiritual growth.',
+    location: 'kindergarten.pceastandrews.org',
+    galleryImages: [
+      { id: '1', title: 'Montessori Play & Learning', url: 'https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=800&q=80', category: 'Campus' },
+      { id: '2', title: 'Creative Arts & Expression', url: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80', category: 'Activities' },
+      { id: '3', title: 'Outdoor Playground Fun', url: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80', category: 'Campus' },
+      { id: '4', title: 'Spiritual Assembly & Song', url: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=800&q=80', category: 'Spiritual' },
+      { id: '5', title: 'CBC Interactive Lessons', url: 'https://images.unsplash.com/photo-1509062522246-3755977927d7?auto=format&fit=crop&w=800&q=80', category: 'Facilities' },
+      { id: '6', title: 'Kindergarten Computer Lab', url: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&w=800&q=80', category: 'Facilities' }
+    ]
+  });
 
   // Collapsible Sidebar State with localStorage persistence
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
@@ -425,6 +445,7 @@ export default function App() {
   if (appMode === 'landing') {
     return (
       <LandingPage
+        content={websiteContent}
         onEnterSystem={(role) => {
           if (role === 'admin') {
             setCurrentUser(users.find((u) => u.role === 'admin') || users[0]);
@@ -576,6 +597,14 @@ export default function App() {
             {/* Tab: Non-Technical System Specification */}
             {activeTab === 'specification' && (
               <SystemSpecificationViewer />
+            )}
+
+            {/* Tab: Website CMS */}
+            {activeTab === 'website-cms' && (
+              <WebsiteContentManager
+                content={websiteContent}
+                onSaveContent={(newC) => setWebsiteContent(newC)}
+              />
             )}
 
             {/* Tab: System Settings & Permissions Matrix */}

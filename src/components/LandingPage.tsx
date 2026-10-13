@@ -27,11 +27,14 @@ import { useTheme } from '../lib/theme';
 import { User } from '../types';
 import { DEMO_USERS } from '../data/mockData';
 
+import { WebsiteContent } from './WebsiteContentManager';
+
 interface LandingPageProps {
+  content?: WebsiteContent;
   onEnterSystem: (role?: 'teacher' | 'admin') => void;
 }
 
-export const LandingPage: React.FC<LandingPageProps> = ({ onEnterSystem }) => {
+export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem }) => {
   const { toggleTheme, isDark } = useTheme();
   const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
 
@@ -238,53 +241,35 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onEnterSystem }) => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Gallery Item 1 */}
-            <div className="group relative rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-              <div className="h-56 bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white relative group-hover:scale-105 transition-transform duration-500">
-                <span className="text-4xl font-black opacity-30 absolute">PP2</span>
-                <div className="text-center p-4 z-10">
-                  <GraduationCap className="w-12 h-12 mx-auto mb-2 text-white/90" />
-                  <h4 className="font-bold text-base">Interactive Classroom Session</h4>
-                  <p className="text-xs text-white/80 mt-1">Montessori learning in PP2 Sunshine</p>
+            {(content?.galleryImages || [
+              { id: '1', title: 'Interactive Classroom Session', url: 'https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=800&q=80', category: 'Academics' },
+              { id: '2', title: 'Safe Outdoor Play Ground', url: 'https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80', category: 'Recreation' },
+              { id: '3', title: 'Creative Arts & Crafts', url: 'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=800&q=80', category: 'Talents' }
+            ]).map((img) => (
+              <div
+                key={img.id}
+                className="group relative rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm"
+              >
+                <div className="h-56 relative overflow-hidden bg-slate-200 dark:bg-slate-700">
+                  <img
+                    src={img.url}
+                    alt={img.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => {
+                      // Fallback if image fails to load
+                      const target = e.target as HTMLElement;
+                      target.style.display = 'none';
+                    }}
+                  />
+                  <span className="absolute top-3 left-3 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md text-white text-[10px] font-bold">
+                    {img.category}
+                  </span>
+                </div>
+                <div className="p-4 bg-white dark:bg-slate-900">
+                  <h5 className="text-xs font-bold text-slate-900 dark:text-white">{img.title}</h5>
                 </div>
               </div>
-              <div className="p-4 bg-white dark:bg-slate-900">
-                <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wider">Academics</span>
-                <h5 className="text-xs font-bold text-slate-900 dark:text-white mt-0.5">Engaging Early Numeracy & Literacy</h5>
-              </div>
-            </div>
-
-            {/* Gallery Item 2 */}
-            <div className="group relative rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-              <div className="h-56 bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center text-white relative group-hover:scale-105 transition-transform duration-500">
-                <span className="text-4xl font-black opacity-30 absolute">PLAY</span>
-                <div className="text-center p-4 z-10">
-                  <Heart className="w-12 h-12 mx-auto mb-2 text-white/90" />
-                  <h4 className="font-bold text-base">Safe Outdoor Play Ground</h4>
-                  <p className="text-xs text-white/80 mt-1">Swings, slides, and social development</p>
-                </div>
-              </div>
-              <div className="p-4 bg-white dark:bg-slate-900">
-                <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider">Recreation</span>
-                <h5 className="text-xs font-bold text-slate-900 dark:text-white mt-0.5">Physical Education & Motor Skills</h5>
-              </div>
-            </div>
-
-            {/* Gallery Item 3 */}
-            <div className="group relative rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm">
-              <div className="h-56 bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white relative group-hover:scale-105 transition-transform duration-500">
-                <span className="text-4xl font-black opacity-30 absolute">ART</span>
-                <div className="text-center p-4 z-10">
-                  <BookOpen className="w-12 h-12 mx-auto mb-2 text-white/90" />
-                  <h4 className="font-bold text-base">Creative Arts & Crafts</h4>
-                  <p className="text-xs text-white/80 mt-1">Painting, modeling, and expression</p>
-                </div>
-              </div>
-              <div className="p-4 bg-white dark:bg-slate-900">
-                <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Talents</span>
-                <h5 className="text-xs font-bold text-slate-900 dark:text-white mt-0.5">Nurturing Creativity in Every Child</h5>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
