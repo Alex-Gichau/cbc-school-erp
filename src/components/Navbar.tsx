@@ -56,7 +56,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-slate-200/90 dark:border-slate-800 shadow-2xs w-full transition-colors duration-200">
+    <header className="sticky top-0 z-30 bg-white dark:bg-black border-b border-slate-200/90 dark:border-neutral-900 shadow-2xs w-full transition-colors duration-200">
       <div className="w-full px-3 sm:px-5 lg:px-6 h-16 flex items-center justify-between gap-2 sm:gap-4 max-w-full">
         {/* Left: Brand Identity */}
         <div className="flex items-center gap-2.5 sm:gap-3 shrink-0 min-w-0">

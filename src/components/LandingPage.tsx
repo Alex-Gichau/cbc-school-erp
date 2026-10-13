@@ -73,28 +73,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
+    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-neutral-100 flex flex-col font-sans transition-colors duration-200">
       {/* Top Announcement Bar */}
-      <div className="bg-orange-600 dark:bg-orange-900 text-white px-4 py-2 text-xs font-semibold flex flex-wrap items-center justify-between gap-2 shadow-inner">
+      <div className="bg-orange-600 dark:bg-orange-950 text-white px-4 py-2 text-xs font-semibold flex flex-wrap items-center justify-between gap-2 shadow-inner">
         <div className="flex items-center gap-2 max-w-4xl mx-auto md:mx-0">
           <span className="font-bold tracking-wide">
             Term 1 2026:
           </span>
-          <span>PCEA St Andrews Kindergarten Portal (kindergarten.pceastandrews.org) — Admissions Open.</span>
+          <span>{content?.announcementText || 'PCEA St Andrews Kindergarten Portal (kindergarten.pceastandrews.org) — Admissions Open.'}</span>
         </div>
         <div className="flex items-center gap-4 text-[11px] mx-auto md:mx-0">
           <span className="flex items-center gap-1">
-            <Phone className="w-3 h-3" /> 0786198873
+            <Phone className="w-3 h-3" /> {content?.phone || '0786198873'}
           </span>
           <span className="hidden sm:inline">|</span>
           <span className="flex items-center gap-1">
-            <Mail className="w-3 h-3" /> kindergarten@pceastandrews.org
+            <Mail className="w-3 h-3" /> {content?.email || 'kindergarten@pceastandrews.org'}
           </span>
         </div>
       </div>
 
       {/* Main Navigation (Clean, advertising & info focused, no direct management buttons in header) */}
-      <header className="sticky top-0 z-30 bg-white/90 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 px-4 sm:px-8 py-3.5 transition-colors">
+      <header className="sticky top-0 z-30 bg-white/90 dark:bg-black/95 backdrop-blur-md border-b border-slate-200/80 dark:border-neutral-900 px-4 sm:px-8 py-3.5 transition-colors">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
           {/* Logo & School Name */}
           <div className="flex items-center gap-3">
@@ -122,7 +122,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
 
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all cursor-pointer"
+              className="p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-neutral-900 transition-all cursor-pointer"
               title="Toggle theme (Shift+D)"
             >
               {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
@@ -132,7 +132,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
       </header>
 
       {/* Hero Section (Advertising the School - No management buttons here) */}
-      <section id="about" className="relative overflow-hidden py-16 sm:py-24 px-4 sm:px-8 bg-gradient-to-b from-orange-50/50 via-white to-slate-50 dark:from-slate-900 dark:via-slate-950 dark:to-slate-950">
+      <section id="about" className="relative overflow-hidden py-16 sm:py-24 px-4 sm:px-8 bg-gradient-to-b from-orange-50/50 via-white to-slate-50 dark:from-black dark:via-black dark:to-black">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
           <div className="lg:col-span-7 space-y-6">
             <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-orange-600 dark:text-orange-400">
@@ -141,23 +141,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
             </div>
 
             <h2 className="text-3xl sm:text-5xl font-black tracking-tight leading-tight text-slate-900 dark:text-white">
-              Shaping Bright Futures with <span className="text-orange-600 dark:text-orange-500">Christian Values & Montessori Excellence</span>
+              {content?.heroTitle || (
+                <>
+                  Shaping Bright Futures with <span className="text-orange-600 dark:text-orange-500">Christian Values & Montessori Excellence</span>
+                </>
+              )}
             </h2>
 
             <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-2xl">
-              Located in the serene surroundings of St Andrews Compound, Church Road, Nairobi, PCEA St Andrews Kindergarten provides a holistic, loving, and stimulating environment where children discover their full potential through play-based learning, CBC curriculum foundations, and spiritual growth.
+              {content?.heroSubtitle ||
+                'Located in the serene surroundings of St Andrews Compound, Church Road, Nairobi, PCEA St Andrews Kindergarten provides a holistic, loving, and stimulating environment where children discover their full potential through play-based learning, CBC curriculum foundations, and spiritual growth.'}
             </p>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-4">
-              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+              <div className="p-4 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-900 shadow-xs">
                 <span className="text-xl font-black text-orange-600 dark:text-orange-400">Playgroup</span>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Ages 2 - 3 Years</p>
               </div>
-              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+              <div className="p-4 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-900 shadow-xs">
                 <span className="text-xl font-black text-amber-600 dark:text-amber-400">PP1 & PP2</span>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Ages 4 - 5 Years</p>
               </div>
-              <div className="p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs">
+              <div className="p-4 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-900 shadow-xs">
                 <span className="text-xl font-black text-emerald-600 dark:text-emerald-400">Grade 1 - 3</span>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">CBC Primary Classes</p>
               </div>
@@ -174,7 +179,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
 
               <a
                 href="#enquire"
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all cursor-pointer shadow-xs"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm font-bold bg-white dark:bg-neutral-950 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-neutral-900 hover:bg-slate-50 dark:hover:bg-neutral-900 transition-all cursor-pointer shadow-xs"
               >
                 <HelpCircle className="w-4 h-4 text-orange-600" />
                 <span>Enquire School Office</span>
@@ -184,7 +189,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
 
           {/* Right Advertising Visual Card */}
           <div className="lg:col-span-5">
-            <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl space-y-6 relative overflow-hidden">
+            <div className="bg-white dark:bg-neutral-950 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-neutral-900 shadow-xl space-y-6 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
 
               <div className="flex items-center gap-3">
@@ -216,7 +221,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
                 </li>
               </ul>
 
-              <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs font-semibold text-slate-500">
+              <div className="pt-4 border-t border-slate-100 dark:border-neutral-900 flex items-center justify-between text-xs font-semibold text-slate-500">
                 <span>Visiting Hours: Mon - Fri 8am - 4pm</span>
                 <span className="text-orange-600 dark:text-orange-400">Book Visit</span>
               </div>
@@ -226,7 +231,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
       </section>
 
       {/* Picture Gallery Section */}
-      <section id="gallery" className="py-20 px-4 sm:px-8 bg-white dark:bg-slate-900 border-t border-b border-slate-200 dark:border-slate-800">
+      <section id="gallery" className="py-20 px-4 sm:px-8 bg-white dark:bg-black border-t border-b border-slate-200 dark:border-neutral-900">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-16">
             <span className="text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400 flex items-center justify-center gap-1.5">
@@ -248,9 +253,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
             ]).map((img) => (
               <div
                 key={img.id}
-                className="group relative rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm"
+                className="group relative rounded-2xl overflow-hidden bg-slate-100 dark:bg-neutral-950 border border-slate-200 dark:border-neutral-900 shadow-sm"
               >
-                <div className="h-56 relative overflow-hidden bg-slate-200 dark:bg-slate-700">
+                <div className="h-56 relative overflow-hidden bg-slate-200 dark:bg-neutral-900">
                   <img
                     src={img.url}
                     alt={img.title}
@@ -265,7 +270,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
                     {img.category}
                   </span>
                 </div>
-                <div className="p-4 bg-white dark:bg-slate-900">
+                <div className="p-4 bg-white dark:bg-neutral-950">
                   <h5 className="text-xs font-bold text-slate-900 dark:text-white">{img.title}</h5>
                 </div>
               </div>
@@ -275,7 +280,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
       </section>
 
       {/* Office Enquiry Section */}
-      <section id="enquire" className="py-20 px-4 sm:px-8 bg-slate-50 dark:bg-slate-950">
+      <section id="enquire" className="py-20 px-4 sm:px-8 bg-slate-50 dark:bg-black">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
           <div className="lg:col-span-6 space-y-6">
             <span className="text-xs font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
@@ -289,41 +294,41 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
             </p>
 
             <div className="space-y-4 pt-2">
-              <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-900">
                 <div className="w-10 h-10 rounded-xl bg-orange-100 dark:bg-orange-950 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold">
                   <Phone className="w-5 h-5" />
                 </div>
                 <div>
                   <span className="text-xs text-slate-400 block font-semibold">Call Office Line</span>
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">0786198873</span>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">{content?.phone || '0786198873'}</span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-900">
                 <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
                   <Mail className="w-5 h-5" />
                 </div>
                 <div>
                   <span className="text-xs text-slate-400 block font-semibold">Email Enquiries</span>
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">kindergarten@pceastandrews.org</span>
-                  <span className="text-xs text-slate-500 block">Alt: pceastandrewskindergarten@gmail.com</span>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">{content?.email || 'kindergarten@pceastandrews.org'}</span>
+                  <span className="text-xs text-slate-500 block">Alt: {content?.altEmail || 'pceastandrewskindergarten@gmail.com'}</span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+              <div className="flex items-center gap-3.5 p-4 rounded-2xl bg-white dark:bg-neutral-950 border border-slate-200 dark:border-neutral-900">
                 <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
                   <MapPin className="w-5 h-5" />
                 </div>
                 <div>
                   <span className="text-xs text-slate-400 block font-semibold">Official Website & Portal</span>
-                  <span className="text-sm font-bold text-slate-900 dark:text-white">kindergarten.pceastandrews.org</span>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">{content?.location || 'kindergarten.pceastandrews.org'}</span>
                 </div>
               </div>
             </div>
           </div>
 
           <div className="lg:col-span-6">
-            <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl">
+            <div className="bg-white dark:bg-neutral-950 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-neutral-900 shadow-xl">
               <h4 className="text-base font-black text-slate-900 dark:text-white mb-2">Send Office Message</h4>
               <p className="text-xs text-slate-500 dark:text-slate-400 mb-6">Fill out this quick form for instant office follow-up.</p>
 
@@ -356,7 +361,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
                       value={enquiryName}
                       onChange={(e) => setEnquiryName(e.target.value)}
                       placeholder="e.g. Mary Wanjiku"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
 
@@ -368,7 +373,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
                       value={enquiryEmail}
                       onChange={(e) => setEnquiryEmail(e.target.value)}
                       placeholder="e.g. mary@gmail.com"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
 
@@ -380,7 +385,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
                       value={enquiryMessage}
                       onChange={(e) => setEnquiryMessage(e.target.value)}
                       placeholder="Ask about admissions, fee structures, school transport..."
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
                     ></textarea>
                   </div>
 
@@ -399,7 +404,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
       </section>
 
       {/* Request Child Report Section */}
-      <section id="report-form" className="py-20 px-4 sm:px-8 bg-white dark:bg-slate-900 border-t border-b border-slate-200 dark:border-slate-800">
+      <section id="report-form" className="py-20 px-4 sm:px-8 bg-white dark:bg-black border-t border-b border-slate-200 dark:border-neutral-900">
         <div className="max-w-4xl mx-auto">
           <div className="bg-gradient-to-br from-orange-600 to-amber-600 rounded-3xl p-6 sm:p-12 text-white shadow-xl relative overflow-hidden">
             <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-white/10 rounded-full blur-2xl pointer-events-none" />
@@ -415,7 +420,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
             </div>
 
             {reportSubmitted ? (
-              <div className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-8 rounded-2xl text-center space-y-4 shadow-xl">
+              <div className="bg-white dark:bg-neutral-950 text-slate-900 dark:text-white p-8 rounded-2xl text-center space-y-4 shadow-xl">
                 <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
                 <h4 className="text-lg font-black">Report Request Logged Successfully!</h4>
                 <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-md mx-auto">
@@ -435,7 +440,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
                 </button>
               </div>
             ) : (
-              <form onSubmit={handleReportSubmit} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 p-6 sm:p-8 rounded-2xl shadow-xl space-y-4">
+              <form onSubmit={handleReportSubmit} className="bg-white dark:bg-neutral-950 text-slate-900 dark:text-slate-100 p-6 sm:p-8 rounded-2xl shadow-xl space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">Name of Child *</label>
@@ -445,7 +450,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
                       value={childName}
                       onChange={(e) => setChildName(e.target.value)}
                       placeholder="e.g. Liam Kiprono"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
 
@@ -457,7 +462,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
                       value={parentName}
                       onChange={(e) => setParentName(e.target.value)}
                       placeholder="e.g. David Kiprono"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
                 </div>
@@ -471,7 +476,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
                       value={adminNumber}
                       onChange={(e) => setAdminNumber(e.target.value)}
                       placeholder="e.g. ADM-2026-001"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 text-xs font-mono text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
 
@@ -483,7 +488,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
                       value={parentEmail}
                       onChange={(e) => setParentEmail(e.target.value)}
                       placeholder="e.g. david.kiprono@gmail.com"
-                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
+                      className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-neutral-800 bg-slate-50 dark:bg-neutral-900 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-orange-500"
                     />
                   </div>
                 </div>
@@ -507,7 +512,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
       </section>
 
       {/* Footer containing all system login / management system action buttons */}
-      <footer className="bg-slate-900 text-slate-400 py-16 px-4 sm:px-8 mt-auto border-t border-slate-800">
+      <footer className="bg-black text-slate-400 py-16 px-4 sm:px-8 mt-auto border-t border-neutral-900">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
           {/* Col 1: School Bio */}
           <div className="space-y-4 md:col-span-1">
@@ -539,19 +544,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
             <ul className="space-y-2.5 text-xs">
               <li className="flex items-center gap-2">
                 <MapPin className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                <span>kindergarten.pceastandrews.org</span>
+                <span>{content?.location || 'kindergarten.pceastandrews.org'}</span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                <span>0786198873</span>
+                <span>{content?.phone || '0786198873'}</span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                <span>kindergarten@pceastandrews.org</span>
+                <span>{content?.email || 'kindergarten@pceastandrews.org'}</span>
               </li>
               <li className="flex items-center gap-2 text-[11px] text-slate-400">
                 <Mail className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                <span>Alt: pceastandrewskindergarten@gmail.com</span>
+                <span>Alt: {content?.altEmail || 'pceastandrewskindergarten@gmail.com'}</span>
               </li>
             </ul>
           </div>
@@ -571,7 +576,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
 
             <button
               onClick={() => onEnterSystem('admin')}
-              className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+              className="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-neutral-900 hover:bg-neutral-800 text-white border border-neutral-800 transition-all cursor-pointer flex items-center justify-center gap-2 shadow-sm"
             >
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
               <span>Administrator Login</span>
@@ -579,7 +584,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ content, onEnterSystem
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto pt-6 border-t border-slate-800 flex flex-wrap items-center justify-between gap-4 text-xs">
+        <div className="max-w-7xl mx-auto pt-6 border-t border-neutral-900 flex flex-wrap items-center justify-between gap-4 text-xs">
           <p>© 2026 PCEA St Andrews Kindergarten & School Management System. All rights reserved.</p>
           <div className="flex items-center gap-4">
             <span className="text-emerald-400 flex items-center gap-1 font-semibold">

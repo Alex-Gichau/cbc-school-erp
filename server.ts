@@ -26,11 +26,47 @@ import {
   AttendanceStatus
 } from './src/types';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const currentFilename = typeof __filename !== 'undefined'
+  ? __filename
+  : (typeof import.meta !== 'undefined' && import.meta.url ? fileURLToPath(import.meta.url) : process.cwd());
+const currentDirname = typeof __dirname !== 'undefined'
+  ? __dirname
+  : path.dirname(currentFilename);
 
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const app = express();
+
+// Explicitly register correct MIME types for JavaScript, WASM, and stylesheet modules
+if (express.static?.mime?.define) {
+  express.static.mime.define({
+    'application/javascript': ['js', 'mjs', 'jsx', 'ts', 'tsx'],
+    'application/wasm': ['wasm'],
+    'text/css': ['css'],
+    'text/html': ['html'],
+    'image/svg+xml': ['svg'],
+    'application/json': ['json']
+  });
+}
+
+// Strict MIME type checking enforcement middleware for module scripts and assets
+app.use((req, res, next) => {
+  const urlPath = req.path.split('?')[0].toLowerCase();
+  if (
+    urlPath.endsWith('.js') ||
+    urlPath.endsWith('.mjs') ||
+    urlPath.endsWith('.tsx') ||
+    urlPath.endsWith('.ts') ||
+    urlPath.endsWith('.jsx')
+  ) {
+    res.type('application/javascript');
+  } else if (urlPath.endsWith('.wasm')) {
+    res.type('application/wasm');
+  } else if (urlPath.endsWith('.css')) {
+    res.type('text/css');
+  }
+  next();
+});
+
 app.use(express.json());
 
 // Ignore non-fatal WebSocket and HMR runtime errors per AI Studio environment constraints
@@ -710,17 +746,49 @@ async function startServer() {
       console.log('[Edura Server] Vite dev middleware mounted.');
     } catch (viteErr) {
       console.error('[Edura Server] Error mounting Vite middleware, checking static dist fallback:', viteErr);
-      const distPath = path.join(process.cwd(), 'dist');
+      const possibleDistPaths = [
+        path.join(process.cwd(), 'dist'),
+        path.resolve(currentDirname, 'dist'),
+        currentDirname
+      ];
+      const distPath = possibleDistPaths.find((p) => fs.existsSync(path.join(p, 'index.html'))) || possibleDistPaths[0];
       if (fs.existsSync(distPath)) {
-        app.use(express.static(distPath));
+        app.use(express.static(distPath, {
+          setHeaders: (res: Response, filePath: string) => {
+            const ext = path.extname(filePath).toLowerCase();
+            if (ext === '.js' || ext === '.mjs' || ext === '.ts' || ext === '.tsx' || ext === '.jsx') {
+              res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+            } else if (ext === '.wasm') {
+              res.setHeader('Content-Type', 'application/wasm');
+            } else if (ext === '.css') {
+              res.setHeader('Content-Type', 'text/css; charset=utf-8');
+            }
+          }
+        }));
         app.get('*', (req: Request, res: Response) => {
           res.sendFile(path.join(distPath, 'index.html'));
         });
       }
     }
   } else {
-    const distPath = path.join(process.cwd(), 'dist');
-    app.use(express.static(distPath));
+    const possibleDistPaths = [
+      path.join(process.cwd(), 'dist'),
+      path.resolve(currentDirname, 'dist'),
+      currentDirname
+    ];
+    const distPath = possibleDistPaths.find((p) => fs.existsSync(path.join(p, 'index.html'))) || possibleDistPaths[0];
+    app.use(express.static(distPath, {
+      setHeaders: (res: Response, filePath: string) => {
+        const ext = path.extname(filePath).toLowerCase();
+        if (ext === '.js' || ext === '.mjs' || ext === '.ts' || ext === '.tsx' || ext === '.jsx') {
+          res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+        } else if (ext === '.wasm') {
+          res.setHeader('Content-Type', 'application/wasm');
+        } else if (ext === '.css') {
+          res.setHeader('Content-Type', 'text/css; charset=utf-8');
+        }
+      }
+    }));
     app.get('*', (req: Request, res: Response) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });

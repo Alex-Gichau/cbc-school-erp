@@ -459,7 +459,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 font-sans flex flex-col antialiased w-full overflow-x-hidden transition-colors duration-200">
+    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 font-sans flex flex-col antialiased w-full overflow-x-hidden transition-colors duration-200">
       {/* Top Header Navbar */}
       <Navbar
         currentUser={currentUser}
@@ -494,7 +494,7 @@ export default function App() {
         />
 
         {/* Dynamic Content Body */}
-        <main className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 lg:p-8 xl:p-8 2xl:p-10 pb-8 bg-slate-50 dark:bg-slate-950 transition-colors">
+        <main className="flex-1 overflow-y-auto p-3 sm:p-5 md:p-6 lg:p-8 xl:p-8 2xl:p-10 pb-8 bg-slate-50 dark:bg-black transition-colors">
           <div className="w-full max-w-7xl xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto space-y-6">
             {/* Action Toast Feedback */}
             {toastMessage && (

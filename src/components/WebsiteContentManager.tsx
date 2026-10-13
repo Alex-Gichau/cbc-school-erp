@@ -86,7 +86,7 @@ export const WebsiteContentManager: React.FC<WebsiteContentManagerProps> = ({
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Header Banner */}
-      <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex flex-wrap items-center justify-between gap-4">
+      <div className="bg-white dark:bg-neutral-950 p-6 rounded-2xl border border-slate-200/80 dark:border-neutral-900 shadow-xs flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-950 text-orange-600 dark:text-orange-400 flex items-center justify-center font-bold">
@@ -107,7 +107,7 @@ export const WebsiteContentManager: React.FC<WebsiteContentManagerProps> = ({
             href="/"
             target="_blank"
             rel="noopener noreferrer"
-            className="px-4 py-2 rounded-xl text-xs font-bold text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-950/60 hover:bg-orange-100 border border-orange-200 dark:border-orange-800 transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2 rounded-xl text-xs font-bold text-orange-700 dark:text-orange-300 bg-orange-50 dark:bg-orange-950/60 hover:bg-orange-100 border border-orange-200 dark:border-neutral-800 transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Globe className="w-3.5 h-3.5" />
             <span>Preview Live Site</span>
@@ -124,7 +124,7 @@ export const WebsiteContentManager: React.FC<WebsiteContentManagerProps> = ({
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Contact & General Info */}
-        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-4">
+        <div className="bg-white dark:bg-neutral-950 p-6 rounded-2xl border border-slate-200/80 dark:border-neutral-900 shadow-xs space-y-4">
           <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2">
             <Phone className="w-4 h-4 text-orange-500" />
             <span>Contact Information & Top Banner</span>
