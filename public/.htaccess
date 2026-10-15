@@ -1,0 +1,18 @@
+# Ensure proper MIME types for ES Modules and modern web assets
+<IfModule mod_mime.c>
+    AddType application/javascript .js .mjs
+    AddType application/wasm .wasm
+    AddType text/css .css
+    AddType application/json .json
+    AddType image/svg+xml .svg
+</IfModule>
+
+# Single Page Application (SPA) routing fallback
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    RewriteRule ^index\.html$ - [L]
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule . /index.html [L]
+</IfModule>

@@ -54,15 +54,17 @@ app.use((req, res, next) => {
   if (
     urlPath.endsWith('.js') ||
     urlPath.endsWith('.mjs') ||
+    urlPath.endsWith('.cjs') ||
     urlPath.endsWith('.tsx') ||
     urlPath.endsWith('.ts') ||
-    urlPath.endsWith('.jsx')
+    urlPath.endsWith('.jsx') ||
+    req.path.startsWith('/@')
   ) {
-    res.type('application/javascript');
+    res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
   } else if (urlPath.endsWith('.wasm')) {
-    res.type('application/wasm');
+    res.setHeader('Content-Type', 'application/wasm');
   } else if (urlPath.endsWith('.css')) {
-    res.type('text/css');
+    res.setHeader('Content-Type', 'text/css; charset=utf-8');
   }
   next();
 });
@@ -72,14 +74,14 @@ app.use(express.json());
 // Ignore non-fatal WebSocket and HMR runtime errors per AI Studio environment constraints
 process.on('uncaughtException', (err: any) => {
   if (err?.message?.includes('WebSocket') || err?.code === 'EADDRINUSE') {
-    console.warn('[Edura Server] Ignored non-fatal runtime error:', err.message);
+    console.warn('[St Andrews Kindergarten Server] Ignored non-fatal runtime error:', err.message);
     return;
   }
-  console.error('[Edura Server] Uncaught exception:', err);
+  console.error('[St Andrews Kindergarten Server] Uncaught exception:', err);
 });
 
 process.on('unhandledRejection', (reason: any) => {
-  console.warn('[Edura Server] Unhandled rejection:', reason);
+  console.warn('[St Andrews Kindergarten Server] Unhandled rejection:', reason);
 });
 
 // In-Memory persistent fallback state initialized with rich seed data
@@ -732,9 +734,45 @@ async function startServer() {
     console.warn('[Database] Background MongoDB connection warning:', err);
   });
 
-  if (process.env.NODE_ENV !== 'production') {
+  const distCandidates = [
+    path.join(process.cwd(), 'dist'),
+    path.resolve(currentDirname, 'dist'),
+    path.resolve(currentDirname, '..', 'dist')
+  ];
+  const distPath = distCandidates.find(
+    (p) => fs.existsSync(path.join(p, 'index.html')) && fs.existsSync(path.join(p, 'assets'))
+  );
+
+  const isProduction =
+    process.env.NODE_ENV === 'production' ||
+    !fs.existsSync(path.join(process.cwd(), 'src', 'main.tsx')) ||
+    process.env.SERVE_DIST === 'true';
+
+  if (isProduction && distPath) {
+    console.log(`[St Andrews Kindergarten Server] Serving compiled production build from: ${distPath}`);
+    app.use(express.static(distPath, {
+      setHeaders: (res: Response, filePath: string) => {
+        const ext = path.extname(filePath).toLowerCase();
+        if (ext === '.js' || ext === '.mjs' || ext === '.cjs' || ext === '.ts' || ext === '.tsx' || ext === '.jsx') {
+          res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+        } else if (ext === '.wasm') {
+          res.setHeader('Content-Type', 'application/wasm');
+        } else if (ext === '.css') {
+          res.setHeader('Content-Type', 'text/css; charset=utf-8');
+        } else if (ext === '.html') {
+          res.setHeader('Content-Type', 'text/html; charset=utf-8');
+        }
+      }
+    }));
+    app.get('*', (req: Request, res: Response) => {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.sendFile(path.join(distPath, 'index.html'));
+    });
+  } else {
     try {
+      console.log('[St Andrews Kindergarten Server] Mounting Vite dev middleware...');
       const vite = await createViteServer({
+        root: process.cwd(),
         server: {
           middlewareMode: true,
           hmr: false, // Prevents port 24678 collisions in containerized dev environment
@@ -743,25 +781,15 @@ async function startServer() {
         appType: 'spa'
       });
       app.use(vite.middlewares);
-      console.log('[Edura Server] Vite dev middleware mounted.');
+      console.log('[St Andrews Kindergarten Server] Vite dev middleware mounted.');
     } catch (viteErr) {
-      console.error('[Edura Server] Error mounting Vite middleware, checking static dist fallback:', viteErr);
-      const possibleDistPaths = [
-        path.join(process.cwd(), 'dist'),
-        path.resolve(currentDirname, 'dist'),
-        currentDirname
-      ];
-      const distPath = possibleDistPaths.find((p) => fs.existsSync(path.join(p, 'index.html'))) || possibleDistPaths[0];
-      if (fs.existsSync(distPath)) {
+      console.error('[St Andrews Kindergarten Server] Error mounting Vite middleware:', viteErr);
+      if (distPath) {
         app.use(express.static(distPath, {
           setHeaders: (res: Response, filePath: string) => {
             const ext = path.extname(filePath).toLowerCase();
-            if (ext === '.js' || ext === '.mjs' || ext === '.ts' || ext === '.tsx' || ext === '.jsx') {
+            if (ext === '.js' || ext === '.mjs') {
               res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-            } else if (ext === '.wasm') {
-              res.setHeader('Content-Type', 'application/wasm');
-            } else if (ext === '.css') {
-              res.setHeader('Content-Type', 'text/css; charset=utf-8');
             }
           }
         }));
@@ -770,37 +798,15 @@ async function startServer() {
         });
       }
     }
-  } else {
-    const possibleDistPaths = [
-      path.join(process.cwd(), 'dist'),
-      path.resolve(currentDirname, 'dist'),
-      currentDirname
-    ];
-    const distPath = possibleDistPaths.find((p) => fs.existsSync(path.join(p, 'index.html'))) || possibleDistPaths[0];
-    app.use(express.static(distPath, {
-      setHeaders: (res: Response, filePath: string) => {
-        const ext = path.extname(filePath).toLowerCase();
-        if (ext === '.js' || ext === '.mjs' || ext === '.ts' || ext === '.tsx' || ext === '.jsx') {
-          res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-        } else if (ext === '.wasm') {
-          res.setHeader('Content-Type', 'application/wasm');
-        } else if (ext === '.css') {
-          res.setHeader('Content-Type', 'text/css; charset=utf-8');
-        }
-      }
-    }));
-    app.get('*', (req: Request, res: Response) => {
-      res.sendFile(path.join(distPath, 'index.html'));
-    });
   }
 
   httpServer = app.listen(PORT, '0.0.0.0', () => {
-    console.log(`[Edura Server] Running at http://localhost:${PORT}`);
+    console.log(`[St Andrews Kindergarten Server] Running at http://localhost:${PORT}`);
   });
 
   httpServer.on('error', (err: any) => {
     if (err.code === 'EADDRINUSE') {
-      console.warn(`[Edura Server] Port ${PORT} busy, retrying in 500ms...`);
+      console.warn(`[St Andrews Kindergarten Server] Port ${PORT} busy, retrying in 500ms...`);
       setTimeout(() => {
         if (httpServer) {
           try {
@@ -808,17 +814,17 @@ async function startServer() {
           } catch (_) {}
         }
         httpServer = app.listen(PORT, '0.0.0.0', () => {
-          console.log(`[Edura Server] Successfully bound at http://localhost:${PORT}`);
+          console.log(`[St Andrews Kindergarten Server] Successfully bound at http://localhost:${PORT}`);
         });
       }, 500);
     } else {
-      console.error('[Edura Server] Server error:', err);
+      console.error('[St Andrews Kindergarten Server] Server error:', err);
     }
   });
 }
 
 process.on('SIGTERM', () => {
-  console.log('[Edura Server] SIGTERM received, shutting down gracefully...');
+  console.log('[St Andrews Kindergarten Server] SIGTERM received, shutting down gracefully...');
   if (httpServer) {
     httpServer.close(() => process.exit(0));
   } else {
@@ -827,7 +833,7 @@ process.on('SIGTERM', () => {
 });
 
 process.on('SIGINT', () => {
-  console.log('[Edura Server] SIGINT received, shutting down gracefully...');
+  console.log('[St Andrews Kindergarten Server] SIGINT received, shutting down gracefully...');
   if (httpServer) {
     httpServer.close(() => process.exit(0));
   } else {
